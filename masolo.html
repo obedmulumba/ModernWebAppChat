@@ -1,0 +1,3196 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modern Web App Chat</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    
+    <style>
+        /* ===================================
+        Variables de base (adaptées pour Messenger)
+        ====================================== */
+        :root {
+        --messenger-blue: #0084ff;
+        --messenger-blue-hover: #0070e0;
+        --messenger-bg-light: #ffffff;
+        --messenger-bg-gray: #f0f2f5; /* Un gris clair pour les fonds et bulles "other" */
+        --messenger-border-light: #e0e2e6;
+        --messenger-text-dark: #333333;
+        --messenger-text-gray: #65676b;
+        --messenger-text-light-gray: #a0a3a7;
+        --messenger-chat-bubble-me: var(--messenger-blue);
+        --messenger-chat-bubble-you: var(--messenger-bg-gray);
+        --messenger-radius-small: 10px;
+        --messenger-radius-large: 18px;
+        --messenger-input-bg: #f0f2f5;
+        --messenger-input-border: #e4e6eb;
+        --messenger-blue-light: #528cff;
+        --messenger-blue-dark: #3a74e8;
+        --messenger-text-color: #333; /* Couleur de texte par défaut pour les éléments généraux */
+        --messenger-hover-bg: #f0f2f5; /* Fond gris clair pour les survols en mode clair */
+        --messenger-text-color-light: #65676B; /* Gris clair pour les icônes */
+        /* Variables pour le mode sombre */
+        --messenger-dark-bg: #1a1a1a;
+        --messenger-dark-text-color: #e4e6eb;
+        --messenger-dark-hover-bg: #3a3b3c;
+        --messenger-light-gray: #e4e6eb; /* Pour le texte clair en mode sombre */
+
+        --messenger-blue-color: #0084FF; /* Le bleu de Messenger (opacité 100%) */
+        --messenger-blue-color-mobile: rgba(0, 132, 255, 0.5); /* 50% d'opacité pour mobile (optionnel) */
+        --messenger-blue-color-faded: rgba(0, 132, 255, 0.4); /* Une opacité pour mobile si pas de survol */
+
+        --messenger-blue-color: #0084FF; /* Bleu de Messenger pour mes messages */
+        --messenger-gray-bubble: #E4E6EB; /* Gris clair pour les messages de l'autre */
+        --messenger-text-color: #333; /* Texte des messages gris */
+        --messenger-white-text: #FFFFFF; /* Texte blanc pour les bulles bleues */
+        --messenger-time-color: #65676B; /* Couleur du temps des messages */
+    
+
+        }
+
+        /* Dark Mode pour Messenger */
+        .dark-mode {
+        --messenger-bg-light: #18191a;
+        --messenger-bg-gray: #242526;
+        --messenger-border-light: #3a3b3c;
+        --messenger-text-dark: #e4e6eb;
+        --messenger-text-gray: #b0b3b8;
+        --messenger-text-light-gray: #828387;
+        --messenger-chat-bubble-me: #0a7cff; /* Un bleu plus clair en dark mode */
+        --messenger-chat-bubble-you: #3e4042;
+        --messenger-input-bg: #3a3b3c;
+        --messenger-input-border: #3e4042;
+        --messenger-text-color-light: #B0B3B8; /* Gris plus clair en mode sombre */
+        }
+
+        /* ===================================
+        Base & Reset
+        ====================================== */
+        *,
+        *::before,
+        *::after {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        }
+
+        html {
+        scroll-behavior: smooth;
+        font-size: 16px; /* Base pour rem */
+        }
+
+        body {
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        font-family: "Inter", sans-serif; /* Ou 'Roboto', 'Segoe UI' pour Messenger */
+        font-weight: 400;
+        color: var(--messenger-text-dark);
+        background-color: var(--messenger-bg-gray); /* Arrière-plan global */
+        min-height: 100vh;
+        display: flex; /* Le body gère le centrage de la page principale si elle est plus petite que 100vw */
+        justify-content: center;
+        align-items: center;
+        }
+
+
+        
+
+        /* ===================================
+        Mise en Page Principale (Similaire à l'application Messenger)
+        ====================================== */
+        .messenger-app-container {
+        display: flex;
+        height: 100vh; /* Prend toute la hauteur de la fenêtre */
+        width: 100%; /* Prend toute la largeur */
+        /* max-width: 1200px; Limite la largeur totale pour un look desktop */
+        background-color: var(--messenger-bg-light);
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Ombre légère pour encadrer l'application */
+        overflow: hidden; /* Important pour les transitions d'overlays */
+        }
+
+        /* Colonne de la liste des conversations (gauche) */
+        .conversations-list {
+        flex: 0 0 320px; /* Largeur fixe pour la liste */
+        background-color: var(--messenger-bg-light);
+        border-right: 1px solid var(--messenger-border-light);
+        display: flex;
+        flex-direction: column;
+        overflow-y: auto;
+        padding: 1rem;
+        }
+
+        /* La zone de chat (centre) */
+        .chat-window {
+        flex: 1; /* Prend tout l'espace restant */
+        min-width: 450px; /* Largeur minimale pour un chat utilisable */
+        background-color: var(--messenger-bg-light);
+        display: flex;
+        flex-direction: column;
+        border-right: 1px solid var(--messenger-border-light); /* Séparateur avec le profil */
+        position: relative; /* Pour positionner des enfants absolument si besoin */
+        /* overflow-y: scroll; */
+
+        /* --- C'EST LA LIGNE CRUCIALE À AJOUTER OU MODIFIER --- */
+        /* Option 1: Si le chat doit prendre toute la hauteur de la fenêtre du navigateur */
+        height: 100vh; 
+        /* OU */
+        /* Option 2: Si le chat est à l'intérieur d'un parent qui a déjà une hauteur fixe */
+        /* height: 100%; */
+        /* OU */
+        /* Option 3: Une hauteur fixe en pixels si c'est ce que vous voulez */
+        /* height: 800px; */
+            /* Assurez-vous que le chat est toujours visible sur desktop */
+            @media (min-width: 769px) {
+                display: flex !important; /* Force l'affichage sur desktop */
+                transform: translateX(0) !important; /* Force la position sur desktop */
+            }
+        }
+
+
+        .chat-header {
+            flex-shrink: 0; /* Empêche le header de rétrécir */
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 15px; /* Ajusté le padding */
+            background-color: var(--messenger-chat-header-bg);
+            border-bottom: 1px solid var(--messenger-border-color);
+            min-height: 60px;
+            box-sizing: border-box;
+        }
+
+        
+
+
+.chat-header .user-info {
+    display: flex;
+    align-items: center;
+    flex-grow: 1; /* Permet à l'info utilisateur de prendre de l'espace */
+}
+
+.chat-header .user-name {
+    font-weight: 600;
+    margin-left: 10px;
+    color: var(--messenger-text-color);
+}
+
+.chat-header .actions {
+    display: flex;
+    align-items: center;
+    gap: 15px; /* Espace entre les icônes d'action */
+}
+
+/* Styles pour les icônes d'action (téléphone, vidéo, info) */
+.chat-header .action-icon {
+    font-size: 20px;
+    color: var(--messenger-icon-color);
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+}
+
+.chat-header .action-icon:hover {
+    opacity: 0.7;
+}
+
+/* Styles pour le bouton de retour (chat-back-button) */
+.chat-back-button {
+    /* Cache le bouton par défaut sur les grands écrans */
+    display: none;
+    /* Utilise les styles de base des boutons d'icône */
+    background-color: transparent;
+    border: none;
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background-color 0.2s ease, color 0.2s ease;
+    color: var(--messenger-text-color-light);
+    font-size: 1.1rem;
+    box-shadow: none;
+    padding: 0;
+}
+
+.chat-back-button:hover {
+    background-color: var(--messenger-hover-bg);
+}
+
+        /* ===================================
+        Styles pour les Boutons d'Action avec Icône (comme exporter, info)
+        ================================== */
+            .chat-action-button.messenger-button-icon {
+                background-color: transparent;
+                border: none;
+                border-radius: 50%; /* Bouton rond */
+                width: 36px; /* Taille de l'icône */
+                height: 36px; /* Taille de l'icône */
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                cursor: pointer;
+                transition: background-color 0.2s ease, color 0.2s ease;
+                color: var(--messenger-text-color-light); /* Couleur par défaut (gris clair) */
+                font-size: 1.1rem; /* Taille de l'icône */
+                box-shadow: none; /* Pas d'ombre sur ces petits boutons */
+                padding: 0; /* Pas de padding interne pour l'icône */
+            }
+
+            .chat-action-button.messenger-button-icon:hover {
+                background-color: var(--messenger-hover-bg); /* Effet de survol subtil */
+            }
+
+
+
+
+
+/* ===================================
+   Styles des Avatars dans les messages
+   (pour les messages du correspondant)
+   ================================== */
+.message-avatar {
+    flex-shrink: 0; /* Empêche l'avatar de rétrécir et de se déformer */
+    width: 32px; /* Taille de l'avatar: petit */
+    height: 32px; /* Assure que la hauteur est la même que la largeur pour un cercle */
+    border-radius: 50%; /* REND L'AVATAR ROND */
+    overflow: hidden; /* Cache les parties de l'image qui dépassent le cercle */
+    margin-right: 8px; /* Ajoute un espace entre l'avatar et la bulle de message */
+    /* Assurez-vous que c'est uniquement pour les messages "from-other" si vous avez d'autres avatars ailleurs */
+    border: 1px solid rgba(0, 0, 0, 0.1);
+}1
+
+.message-avatar img {
+    width: 100%; /* L'image remplit la largeur de son conteneur (message-avatar) */
+    height: 100%; /* L'image remplit la hauteur de son conteneur */
+    object-fit: cover; /* Recadre l'image pour qu'elle couvre entièrement le conteneur sans se déformer */
+    display: block; /* Supprime l'espace sous l'image que les navigateurs peuvent ajouter par défaut */
+}
+
+
+
+
+
+        /* Le profil utilisateur (droite) */
+        .user-profile-sidebar {
+            flex: 0 0 320px; /* Largeur fixe pour le panneau de droite sur grand écran */
+            /* background-color: var(--messenger-list-bg); */
+            background-color: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1); /* Une légère ombre pour la profondeur */
+            backdrop-filter: blur(10px); /* L'effet de flou essentiel */
+            -webkit-backdrop-filter: blur(10px);
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+
+            border-left: 1px solid var(--messenger-border-color);
+            display: flex; /* Toujours flex par défaut sur grand écran */
+            flex-direction: column;
+            overflow-y: auto;
+            padding: 20px;
+            box-sizing: border-box;
+            position: relative; /* Pour le bouton de fermeture mobile et autres absolus */
+            /* Pas de transform: translateX(100%) ici pour les grands écrans */
+            /* Pas de transition: transform 0.3s ease-out ici, elle est gérée par .user-profile--show */
+        }
+
+        /* Conteneur principal du contenu du profil pour le centrage vertical */
+        .user-profile-content {
+        display: flex;
+        flex-direction: column;
+        align-items: center; /* Centre horizontalement les éléments internes */
+        text-align: center; /* Centre le texte */
+        width: 100%; /* Prend toute la largeur de son parent */
+        padding: 2rem 1.5rem; /* Padding pour le contenu réel du profil */
+        /* Pour centrer verticalement si le contenu est court */
+        justify-content: center; /* Centre le contenu verticalement (pour un contenu court) */
+        flex-grow: 1; /* Permet au contenu de prendre de la place */
+        }
+
+        /* Style de l'avatar dans le profil */
+        .user-profile-content .user-avatar.large-avatar {
+            width: 10rem; /* Plus grand avatar pour le profil */
+            height: 10rem;
+            margin-bottom: 1.5rem;
+        }
+        .user-profile-content .user-avatar.large-avatar img {
+            border: 4px solid var(--messenger-border-light); /* Bordure légèrement plus prononcée */
+            /* Pas de status-indicator sur le grand avatar du profil généralement */
+        }
+
+        /* Nom et statut du profil */
+        .profile-name {
+            font-size: 1.8rem; /* Nom plus grand */
+            font-weight: 700;
+            color: var(--messenger-text-dark);
+            margin-bottom: 0.5rem;
+        }
+        .profile-status {
+            font-size: 1rem;
+            color: var(--messenger-text-gray); /* Couleur plus neutre pour le statut "Active now" */
+            font-weight: 400; /* Moins gras */
+            margin-bottom: 2rem; /* Plus d'espace sous le statut */
+        }
+
+        /* Sections d'information du profil (Style WhatsApp) */
+        .profile-section {
+            width: 100%;
+            text-align: left; /* Texte aligné à gauche */
+            margin-bottom: 1.5rem; /* Espacement entre les sections */
+            background-color: var(--messenger-bg-gray); /* Fond clair pour la section */
+            padding: 1rem;
+            border-radius: var(--messenger-radius-small); /* Coins arrondis */
+            box-shadow: inset 0 0 0 1px var(--messenger-border-light); /* Bordure interne légère */
+        }
+        .dark-mode .profile-section {
+            background-color: var(--messenger-input-bg); /* Fond sombre en dark mode */
+        }
+        .profile-section:last-child {
+            margin-bottom: 0;
+        }
+        .profile-section .section-title {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--messenger-text-gray); /* Couleur des titres de section */
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.5rem;
+        }
+        .profile-section .section-content {
+            font-size: 1rem;
+            color: var(--messenger-text-dark);
+            word-wrap: break-word;
+        }
+        .profile-tags {
+            list-style: none;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+        .profile-tags li {
+            background-color: var(--messenger-bg-light); /* Fond des tags plus clair */
+            color: var(--messenger-text-dark);
+            padding: 0.4rem 0.8rem;
+            border-radius: 18px;
+            font-size: 0.85rem;
+            white-space: nowrap;
+            border: 1px solid var(--messenger-border-light); /* Petite bordure */
+        }
+        .dark-mode .profile-tags li {
+            background-color: var(--messenger-bg-gray);
+            border-color: var(--messenger-border-light);
+        }
+
+        /* Bouton de fermeture pour les overlays (profil/chat mobile) - inchangé */
+        .close-button {
+        position: absolute;
+        top: 1rem;
+        left: 1rem; /* Aligné à gauche, comme dans WhatsApp */
+        font-size: 1.8rem;
+        color: var(--messenger-text-gray);
+        cursor: pointer;
+        z-index: 1000;
+        display: none;
+        border:0px solid blue;
+        background-color: transparent;
+        }
+
+
+        /* ===================================
+        Styles pour les Boutons Messenger-like (Exporter/Sauvegarder/Charger)
+        ================================== */
+        .messenger-button {
+            background-color: transparent; /* Fond transparent par défaut */
+            color: var(--messenger-text-color); /* Couleur du texte par défaut (s'adapte au mode sombre/clair) */
+            border: none;
+            padding: 10px 15px;
+            border-radius: 20px; /* Bordures arrondies comme sur Messenger */
+            cursor: pointer;
+            font-size: 0.9rem;
+            display: flex; /* Permet d'aligner l'icône et le texte */
+            align-items: center;
+            justify-content: center; /* Centrer le contenu */
+            gap: 8px; /* Espace entre l'icône et le texte */
+            transition: background-color 0.2s ease, color 0.2s ease;
+            margin: 10px auto; /* Centrer le bouton et ajouter de l'espace */
+            width: calc(100% - 20px); /* Ajuster la largeur avec le margin */
+            box-sizing: border-box; /* Inclure padding et border dans la largeur */
+            font-weight: 600; /* Texte légèrement plus gras */
+        }
+
+        /* Effet de survol */
+        .messenger-button:hover {
+            background-color: var(--messenger-hover-bg); /* Couleur de fond au survol (gris clair ou bleu clair) */
+            color:black;
+        }
+
+        /* Styles spécifiques pour le mode CLAIR */
+        body:not(.dark-mode) .messenger-button {
+            color: var(--messenger-blue-light); /* Texte bleu en mode clair */
+        }
+
+        /* body:not(.dark-mode) .messenger-button:hover {
+            background-color: var(--messenger-blue-hover); 
+        } */
+
+        /* Styles spécifiques pour le mode SOMBRE */
+        body.dark-mode .messenger-button {
+            color: var(--messenger-light-gray); /* Texte gris clair en mode sombre */
+        }
+
+        body.dark-mode .messenger-button:hover {
+            background-color: var(--messenger-dark-hover-bg); /* Fond gris foncé au survol en mode sombre */
+        }
+
+        body.dark-mode {
+            --messenger-text-color: var(--messenger-dark-text-color);
+            --messenger-hover-bg: var(--messenger-dark-hover-bg);
+            /* Ajoutez ici d'autres overrides de variables si nécessaire pour le dark mode */
+        }
+
+.message-area {
+    flex: 1; /* **CRUCIAL :** Prend TOUT l'espace vertical disponible dans son parent (.chat-window ou .chat-main) */
+    overflow-y: auto; /* **CRUCIAL :** Active le défilement vertical lorsque le contenu déborde */
+    -webkit-overflow-scrolling: touch; /* Améliore le défilement sur les appareils iOS */
+    padding: 10px 15px; /* Ajoutez ici le padding pour les messages */
+    overflow-y: auto;
+    display: flex; /* Pour que les messages s'alignent au bas si peu nombreux */
+    flex-direction: column; /* Pour que les messages s'empilent */
+    justify-content: flex-end; /* Pour que les messages soient "collés" au bas */
+}
+        
+
+.message-list { /* Ou #messageList si vous utilisez l'ID */
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    margin-top: auto; /* Permet à la liste de se pousser vers le bas dans le conteneur flex (.message-area) */
+    
+    /* *** AJOUTEZ ou VÉRIFIEZ ces lignes ici: *** */
+    overflow-y: auto; 
+    -webkit-overflow-scrolling: touch; /* Améliore le défilement sur les appareils iOS (déplacez-le ici) */
+    /* *** IMPORTANT: Donnez-lui une hauteur pour que overflow-y:auto fonctionne *** */
+    height: 100%; 
+    /* Si height:100% ne fonctionne pas, il faudra peut-être une max-height:100% ou une hauteur fixe */
+}
+
+
+/* Styles généraux pour chaque conteneur de message (la ligne entière) */
+.message-item {
+    display: flex; /* Utilise Flexbox pour un alignement horizontal */
+    
+    margin-bottom: 10px; /* Espace entre les messages */
+    align-items: flex-end; /* Aligne les éléments en bas (avatar et bulle) si leurs hauteurs diffèrent */
+    max-width: 80%; /* S'assure que le conteneur ne déborde pas */
+}
+
+/* Styles pour les messages ENVOYÉS par l'utilisateur (vous) */
+.message-item.from-me {
+    margin-left: auto; /* C'EST LA CLÉ : Pousse le .message-item entier vers l'extrême droite */
+    margin-right: 0; /* S'assure qu'il n'y a pas de marge droite conflictuelle */
+    flex-direction: row-reverse; /* Si vous ajoutez un avatar pour vous-même, il sera à droite de la bulle */
+   /* Pas d'avatar pour "from-me" par défaut, mais utile pour la flexibilité */
+}
+
+/* Styles pour les messages REÇUS du correspondant */
+.message-item.from-other {
+    margin-right: auto; /* Pousse le .message-item entier vers l'extrême gauche */
+    margin-left: 0; /* S'assure qu'il n'y a pas de marge gauche conflictuelle */
+    flex-direction: row; /* Avatar à gauche, contenu du message à droite */
+}
+
+/* Conteneur pour la bulle et le temps du message (pour tous les messages) */
+/* C'est ce qui contient la bulle et l'heure */
+.message-content {
+    display: flex;
+    flex-direction: column; /* La bulle au-dessus du temps */
+    align-items: flex-start; 
+    flex: 1; /* Permet au contenu de prendre l'espace restant à côté de l'avatar */
+    min-width: 0; /* Important pour Flexbox pour gérer les débordements de texte */
+}
+
+/* Aligner le contenu des messages envoyés (bulle + temps) à droite */
+.message-item.from-me .message-content {
+    align-items: flex-end;
+}
+
+/* Aligne le contenu (bulle + heure) pour les messages reçus à gauche */
+/* .message-item.from-other .message-content {
+    align-items: flex-start;
+} */
+
+/* Styles des bulles de message */
+.message-bubble {
+    padding: 10px 14px;
+    border-radius: 18px; /* Bords très arrondis */
+    font-size: 0.95rem;
+    line-height: 1.3;
+    word-wrap: break-word; /* Gère les longs mots */
+    white-space: pre-wrap; /* Préserve les retours à la ligne */
+    max-width: 100%; /* S'assure que la bulle ne dépasse pas son conteneur */
+    min-width: 30px; /* Empêche les bulles d'être trop petites pour un seul caractère */
+}
+
+/* Couleurs des bulles */
+.message-item.from-me .message-bubble {
+    background-color: var(--messenger-blue); /* Bleu Messenger pour mes messages */
+    color: white;
+    border-bottom-right-radius: 4px; /* Petit "pic" en bas à droite */
+}
+
+.message-item.from-other .message-bubble {
+    background-color: var(--messenger-gray-bubble); /* Gris clair pour les messages de l'autre */
+    color: var(--messenger-text-color); /* Texte sombre */
+    border-bottom-left-radius: 4px; /* Petit "pic" en bas à gauche */
+}
+
+.message-item.from-other .message-bubble {
+    background-color: #e0e0e0; /* Gris clair pour le mode clair */
+    color: #333; /* Texte sombre */
+}
+
+
+/* Ajustement des messages ENVOYÉS (from-me) en mode sombre */
+body.dark-mode .message-item.from-me .message-bubble {
+    background-color: #2c5282; /* Un bleu plus profond, plus visible sur fond sombre */
+    color: #e2e8f0; /* Texte clair */
+}
+
+/* Ajustement des messages REÇUS (from-other) en mode sombre */
+body.dark-mode .message-item.from-other .message-bubble {
+    background-color: #4a5568; /* Un gris plus foncé, distinct du fond */
+    color: #e2e8f0; /* Texte clair */
+}
+
+/* Ajustement du temps des messages en mode sombre */
+body.dark-mode .message-time {
+    color: #a0aec0; /* Gris plus clair pour la lisibilité */
+}
+
+/* --- Autres ajustements essentiels pour le mode sombre --- */
+
+/* Barre de chat */
+body.dark-mode .message-input-area {
+    background-color: #2d3748;
+    border-top: 1px solid #4a5568;
+}
+
+body.dark-mode .message-input {
+    background-color: #2d3748;
+    color: #e2e8f0;
+    border: 1px solid #4a5568;
+}
+
+/* Boutons d'action */
+body.dark-mode .input-action-button {
+    background-color: #2d3748;
+    color: #90cdf4; /* Couleur d'icône claire */
+}
+
+body.dark-mode .input-action-button.send-button {
+    background-color: #007bff; /* Gardez votre couleur d'envoi principale */
+    color: #fff;
+}
+
+/* Prévisualisation d'image */
+body.dark-mode .image-preview-container {
+    background-color: #2d3748;
+    border-top-color: #4a5568;
+}
+
+body.dark-mode .image-preview-actions .cancel-upload-button {
+    background-color: #c53030;
+}
+
+body.dark-mode .image-preview-actions .send-image-button {
+    background-color: #4299e1;
+}
+
+/* Menu d'attachement */
+body.dark-mode .attachment-menu {
+    background-color: #2d3748;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+    border: 1px solid #4a5568;
+}
+body.dark-mode .attachment-option {
+    color: #e2e8f0;
+}
+body.dark-mode .attachment-option:hover {
+    background-color: #4a5568;
+}
+
+/* Icônes */
+body.dark-mode .fa-solid { /* Applique à toutes les icônes Font Awesome */
+    color: #90cdf4; /* Couleur générale pour les icônes en mode sombre */
+}
+
+
+/* Styles des avatars (comme vu précédemment) */
+.message-avatar {
+    flex-shrink: 0;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    overflow: hidden;
+    margin-right: 8px; /* Espace après l'avatar */
+}
+
+.message-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+        /* ===================================
+        Adaptabilité (Media Queries à la Messenger)
+        ====================================== */
+
+        /* Pour les tablettes (768px à 1199px) */
+        @media (max-width: 1199px) {
+        .user-profile-sidebar {
+            /* Le profil devient un overlay sur les tablettes */
+            position: fixed;
+            top: 0;
+            right: 0;
+            height: 100%;
+            width: 320px;
+            z-index: 1002;
+            transform: translateX(100%); /* Caché par défaut */
+            transition: transform 0.3s ease-out;
+            box-shadow: -3px 0 10px rgba(0, 0, 0, 0.1);
+            display: none; /* Caché par JS par user-profile--show */
+        }
+
+        .user-profile-sidebar.user-profile--show {
+            /* Ceci est surtout pertinent pour la responsivité (mobile) */
+            transform: translateX(0); /* Rentre en vue sur mobile */
+        }
+
+        /* Cache le bouton de fermeture du profil en mode desktop */
+        .user-profile-sidebar .close-button {
+            display: block; /* Affiche le bouton de fermeture en mode overlay */
+        }
+
+        .chat-window {
+            border-right: none; /* Plus de bordure si le profil est en overlay */
+        }
+        }
+
+
+
+        /* Pour les mobiles (max-width: 767px) */
+        @media (max-width: 767px) {
+
+            /* Affiche le bouton de retour uniquement sur mobile */
+            .chat-back-button {
+                display: flex; /* Rendre le bouton visible sur mobile */
+                margin-right: 10px; /* Ajouter un espace entre le bouton retour et les autres icônes */
+            }
+
+            /* Ajuste la taille de l'avatar dans l'en-tête pour mobile si nécessaire */
+            .chat-header .user-avatar {
+                width: 32px;
+                height: 32px;
+            }
+            .chat-header .user-avatar img {
+                width: 100%;
+                height: 100%;
+            }
+            .chat-header .user-name {
+                font-size: 1rem;
+            }
+
+            
+            .user-profile-sidebar {
+                position: relative;
+                top: 0;
+                right: 0;
+                bottom: 0;
+                width: 100%;
+                max-width: 320px;
+                z-index: 110;
+                display: none; /* CACHÉ PAR DÉFAUT SUR MOBILE */
+                transform: translateX(100%); /* Commence hors écran à droite sur mobile */
+                transition: transform 0.3s ease-out, display 0.3s ease-out; /* Transition pour mobile */
+            }
+
+            .user-profile-sidebar.user-profile--show {
+                transform: translateX(0); /* Fait glisser le profil en vue sur mobile */
+                display: flex; /* Affiche le profil sur mobile pour l'animation */
+            }
+
+            .messenger-app-container {
+                box-shadow: none; /* Pas d'ombre sur tout l'écran */
+                max-width: 100%; /* Prend toute la largeur disponible */
+            }
+
+            .conversations-list {
+                flex: 1; /* La liste prend tout l'écran par défaut */
+                border-right: none;
+                padding: 1rem;
+                position: relative; /* Pour le z-index */
+                z-index: 1001; /* Doit être en dessous du chat/profil */
+            }
+
+            .chat-window {
+                /* Le chat devient un overlay full-screen */
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                /* height: 100%; */
+                min-width: unset; /* Supprime la contrainte de largeur */
+                transform: translateX(100%); /* Commence hors de l'écran, à droite */
+                transition: transform 0.3s ease-out;
+                z-index: 1002; /* Au-dessus de la liste */
+                border-right: none;
+                display: none; /* Caché par JS via chat--show */
+            }
+
+            .chat-window.chat--show {
+                transform: translateX(0%);
+                display: flex;
+            }
+
+            /* Le profil est aussi un overlay full-screen sur mobile */
+            .user-profile-sidebar {
+                width: 100%; /* Prend toute la largeur */
+                z-index: 1003; /* Au-dessus du chat */
+                /* Les styles de base de user-profile-sidebar gèrent déjà l'overlay */
+            }
+
+            /* Afficher le bouton retour/précédent du chat en mobile */
+            .chat-header .back-button {
+                display: block;
+            }
+        }
+
+        /* ===================================
+        Composants et Éléments Individuels (Style Messenger)
+        ====================================== */
+
+        /* En-têtes (Liste de conversations, Chat) */
+        .app-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid var(--messenger-border-light);
+        margin-bottom: 1rem;
+        }
+
+        .app-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--messenger-text-dark);
+        }
+
+        .header-action-button {
+        width: 2.5rem;
+        height: 2.5rem;
+        border-radius: 50%;
+        background-color: var(--messenger-bg-gray);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        cursor: pointer;
+        transition: background-color 0.2s ease;
+        }
+        .header-action-button:hover {
+        background-color: var(--messenger-border-light);
+        }
+
+        .search-input-container {
+        position: relative;
+        margin-bottom: 1rem;
+        }
+        .search-input {
+        width: 100%;
+        padding: 0.6rem 1rem 0.6rem 2.5rem; /* Espace pour l'icône */
+        border: none;
+        border-radius: var(--messenger-radius-large);
+        background-color: var(--messenger-input-bg);
+        font-size: 0.9rem;
+        color: var(--messenger-text-dark);
+        }
+        .search-input::placeholder {
+        color: var(--messenger-text-light-gray);
+        }
+        .search-input:focus {
+        outline: none;
+        box-shadow: 0 0 0 2px var(--messenger-blue);
+        }
+        .search-icon {
+        position: absolute;
+        left: 0.8rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--messenger-text-light-gray);
+        font-size: 1rem; /* Pour une icône font-awesome ou similaire */
+        }
+
+        /* Liste des membres de conversation */
+        .conversation-list-items {
+        list-style: none;
+        flex-grow: 1;
+        overflow-y: auto;
+        padding-right: 0.5rem; /* Pour la barre de défilement */
+        }
+
+        .conversation-item {
+        display: flex;
+        align-items: center;
+        padding: 0.8rem 0.5rem;
+        border-radius: var(--messenger-radius-small);
+        margin-bottom: 0.2rem;
+        cursor: pointer;
+        transition: background-color 0.2s ease;
+        }
+        .conversation-item:hover {
+        background-color: var(--messenger-bg-gray);
+        }
+        .conversation-item.active {
+        background-color: var(--messenger-blue); /* Actif avec la couleur Messenger */
+        color: white;
+        }
+        .conversation-item.active .conversation-name,
+        .conversation-item.active .last-message {
+        color: white;
+        }
+        .conversation-item.active .user-avatar .status-indicator {
+            border-color: var(--messenger-blue); /* Changer la bordure de l'indicateur de statut si actif */
+        }
+
+        .user-avatar {
+        position: relative;
+        width: 3.5rem;
+        height: 3.5rem;
+        flex-shrink: 0;
+        margin-right: 0.8rem;
+        }
+        .user-avatar img {
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        object-fit: cover;
+        }
+        .status-indicator {
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        width: 0.9rem;
+        height: 0.9rem;
+        background-color: #31a24c; /* Vert pour en ligne */
+        border: 2px solid var(--messenger-bg-light); /* Bordure blanche/sombre */
+        border-radius: 50%;
+        }
+        .status-indicator.offline {
+        background-color: var(--messenger-text-light-gray); /* Gris pour hors ligne */
+        }
+
+        .conversation-info {
+        flex: 1;
+        overflow: hidden;
+        }
+        .conversation-name {
+        font-weight: 600;
+        color: var(--messenger-text-dark);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        margin-bottom: 0.2rem;
+        }
+        .last-message {
+        font-size: 0.85rem;
+        color: var(--messenger-text-gray);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        }
+        .last-message.unread {
+        font-weight: 600;
+        color: var(--messenger-text-dark);
+        }
+
+        /* En-tête du chat (Chat Window) */
+        .chat-header {
+        display: flex;
+        align-items: center;
+        padding: 0.8rem 1rem;
+        border-bottom: 1px solid var(--messenger-border-light);
+        flex-shrink: 0; /* Ne rétrécit pas */
+        }
+        .chat-header .back-button {
+        display: none; /* Caché par défaut sur desktop/tablet */
+        margin-right: 1rem;
+        }
+        .chat-header .user-info {
+        display: flex;
+        align-items: center;
+        flex: 1;
+        }
+        .chat-header .user-name {
+        font-weight: 600;
+        color: var(--messenger-text-dark);
+        font-size: 1.1rem;
+        margin-left: 0.8rem;
+        }
+        .chat-header .actions {
+        display: flex;
+        gap: 0.5rem;
+        }
+        .chat-header .action-icon {
+        font-size: 1.2rem; /* Pour une icône font-awesome ou similaire */
+        color: var(--messenger-blue);
+        cursor: pointer;
+        }
+
+        /* Zone des messages */
+        .message-area {
+            flex-grow: 1; /* Prend l'espace disponible */
+            overflow-y: auto;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end; /* Les messages s'empilent depuis le bas */
+        }
+
+        .message-list {
+            list-style: none;
+            -webkit-overflow-scrolling: touch; /* Améliore le défilement sur les appareils iOS */
+            padding: 0;
+            margin: 0;
+            margin-top: auto; /* Permet à la liste de se pousser vers le bas dans le conteneur flex */
+            
+        }
+
+/* La largeur ou la hauteur de la barre de défilement */
+#messageList.message-list::-webkit-scrollbar {
+    width: 8px; /* Largeur de la barre de défilement verticale */
+    background-color: transparent; 
+}
+
+/* La piste (le chemin) de la barre de défilement */
+#messageList.message-list::-webkit-scrollbar-track {
+    background-color: transparent; /* Piste transparente */
+    border-radius: 10px; /* Bords arrondis pour la piste */
+}
+
+#messageList.message-list::-webkit-scrollbar-thumb { /* Classe corrigée ici */
+    /* Couleur semi-transparente par défaut */
+    background-color: transparent;
+    border-radius: 10px; /* Bords arrondis pour le pouce */
+    transition: background-color 0.3s ease; /* Transition douce pour le survol */
+}
+
+/* Au survol de la zone de défilement (la liste des messages),
+   rendre le pouce bleu et visible */
+#messageList.message-list:hover::-webkit-scrollbar-thumb {
+    background-color: var(--messenger-blue-color, #0084FF); /* Couleur bleue de Messenger (opacité 100%) */
+}
+
+/* -----------------------------------
+   GESTION SPÉCIFIQUE POUR LES APPAREILS MOBILES (PAS DE SURVOL)
+   ----------------------------------- */
+/* Sur mobile, comme il n'y a pas de survol, la barre serait toujours invisible.
+   Nous devons donc la rendre légèrement visible par défaut sur les écrans tactiles. */
+@media (max-width: 768px) {
+    #messageList.message-list::-webkit-scrollbar-thumb {
+        /* Légèrement visible sur mobile pour indiquer la possibilité de défilement */
+        background-color: var(--messenger-blue-color-faded, rgba(0, 132, 255, 0.4)); /* Par exemple, 40% d'opacité */
+    }
+}
+
+
+
+
+        .message-item {
+            display: flex; /* Active Flexbox pour aligner la bulle et l'heure */
+            flex-direction: column; /* Empile la bulle et l'heure verticalement */
+            margin-bottom: 0.5rem;
+            /* Pour l'alignement général du groupe bulle + heure */
+            width: 100%; /* S'assure que le message-item prend toute la largeur pour l'alignement */
+       }
+
+        display: flex;
+    flex-direction: column; /* La bulle au-dessus du temps */
+    align-items: flex-start; /* Aligne la bulle et le temps à gauche */
+    flex: 1; /* Permet au contenu de prendre l'espace restant à côté de l'avatar */
+    min-width: 0; /* Important pour Flexbox pour gérer les débordements de texte */
+
+        .message-bubble {
+        padding: 10px 14px;
+        border-radius: 18px; /* Bords très arrondis */
+        font-size: 0.95rem;
+        line-height: 1.3;
+        word-wrap: break-word;
+        white-space: pre-wrap;
+        max-width: 100%;
+        }
+
+        .message-bubble.from-me {
+        background-color: var(--messenger-chat-bubble-me);
+        color: var(--messenger-chat-bubble-me-text);
+        /* RETIRÉ: align-self: flex-end; et margin-left: auto; */
+        /* Ces propriétés sont maintenant gérées par le parent .message-item.from-me */
+        margin-right: 0.5rem; /* Garde la petite marge du bord */
+        }
+
+        .message-item.from-other .message-bubble {
+            background-color: var(--messenger-gray-bubble); /* Gris clair pour les messages de l'autre */
+            color: var(--messenger-text-color); /* Texte sombre */
+            border-bottom-left-radius: 4px; /* Un peu moins arrondi en bas à gauche pour le "pic" */
+        }
+
+        .message-time {
+            font-size: 0.75rem;
+            color: var(--messenger-text-light-gray);
+            margin-top: 0.2rem;
+        }
+
+        /* NOUVEAUX STYLES POUR ALIGNER TOUT LE BLOC DE MESSAGE */
+        .message-item.from-me {
+        align-items: flex-end; /* Aligne la bulle et l'heure ENSEMBLE à droite */
+        }
+
+        .message-item.from-other {
+        align-items: flex-start; /* Aligne la bulle et l'heure ENSEMBLE à gauche */
+        }
+
+        /* RETIRÉ les align-self sur message-time car ils sont maintenant gérés par le parent .message-item */
+        /* .message-item.from-me .message-time {
+        align-self: flex-end;
+        margin-right: 0.5rem;
+        }
+        .message-item.from-other .message-time {
+        align-self: flex-start;
+        margin-left: 0.5rem;
+        } */
+
+        /* Zone d'envoi de message */
+        .message-input-area {
+            display: flex;
+            flex-direction: column; /* Si les rows sont empilées */
+            align-items: flex-start; /* Ou center, selon votre besoin */
+            padding: 10px 15px;
+            background-color: var(--messenger-chat-footer-bg);
+            border-top: 1px solid var(--messenger-border-color);
+            position: relative; /* TRÈS IMPORTANT : Le menu sera positionné par rapport à cette zone */
+
+        }
+
+        .message-input-area {
+            padding: 10px 20px;
+            background-color: var(--messenger-list-bg);
+            border-top: 1px solid var(--messenger-border-color);
+            display: flex;
+            flex-direction: column; /* Permet aux lignes de se positionner verticalement */
+            gap: 10px; /* Espace entre les deux lignes (normal et IA) */
+            box-sizing: border-box;
+        }
+
+        /* Styles pour la ligne de chat normale */
+        .normal-chat-input-row {
+            display: flex; /* Utilise Flexbox pour aligner les éléments horizontalement */
+            align-items: center; /* Centre verticalement les éléments dans la ligne */
+            /* gap: 10px; Ajoute un espacement de 10px entre chaque élément enfant */
+            width: 100%; /* S'assure que la ligne prend toute la largeur disponible de son parent */
+        }
+
+        /* Styles pour l'input de message à l'intérieur de cette ligne */
+        .normal-chat-input-row .message-input {
+            flex-grow: 1; /* Permet à l'input de prendre tout l'espace disponible */
+            padding: 8px 15px;
+            border: none;
+            border-radius: 20px;
+            background-color: var(--messenger-input-bg);
+            color: var(--messenger-text-color);
+            font-size: 15px;
+            outline: none; /* Supprime le contour bleu/noir au focus */
+            box-sizing: border-box; /* Inclut le padding dans la largeur/hauteur totale */
+        }
+
+        /* Styles pour le placeholder de l'input */
+        .normal-chat-input-row .message-input::placeholder {
+            color: var(--messenger-text-gray);
+        }
+
+        /* Styles des boutons d'action (plus, emoji, image) dans cette ligne */
+        .normal-chat-input-row .input-action-button {
+            background: transparent; /* Boutons transparents par défaut */
+            border: none;
+            color: var(--messenger-icon-color); /* Couleur des icônes */
+            font-size: 20px;
+            cursor: pointer;
+            padding: 5px; /* Remplissage pour faciliter le clic */
+            border-radius: 50%; /* Boutons ronds */
+            transition: background-color 0.2s ease; /* Transition douce au survol */
+        }
+
+        /* ===================================
+        Boutons d'action (plus, sticky-note, image, envoi)
+        ================================== */
+        .input-action-button, .send-button {
+            background: none;
+            border: none;
+            color: var(--messenger-blue-color);
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0; /* Empêche les boutons de rétrécir */
+        }
+
+        /* Pour le bouton '+' spécifique */
+        .attach-button {
+            margin-right: 10px;
+        }
+
+        /* Effet au survol des boutons d'action */
+        .normal-chat-input-row .input-action-button:hover {
+            background-color: var(--messenger-hover-color);
+        }
+
+        /* Style spécifique pour le bouton d'envoi */
+        .normal-chat-input-row .send-button {
+            font-size: 20px; /* Taille de l'icône de l'avion en papier */
+            /* Vous pourriez vouloir le rendre plus visible ou coloré si désiré */
+        }
+
+        /* Styles pour la ligne de chat IA (pour référence, si vous ne l'avez pas déjà) */
+        .ai-chat-input-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
+        }
+
+        .ai-prompt-input {
+            flex-grow: 1;
+            padding: 8px 15px;
+            border: none;
+            border-radius: 20px;
+            background-color: var(--messenger-input-bg);
+            color: var(--messenger-text-color);
+            font-size: 15px;
+            outline: none;
+            box-sizing: border-box;
+        }
+
+        .ai-prompt-input::placeholder {
+            color: var(--messenger-text-gray);
+        }
+
+        .ai-generate-button {
+            background-color: var(--messenger-blue-light); /* Couleur par défaut (peut être la même que Gemini Light) */
+            color: white; /* Texte blanc par défaut */
+            border: none;
+            padding: 10px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: background-color 0.3s ease, color 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Légère ombre pour le relief */
+        }
+
+        .ai-generate-button:hover {
+            background-color: var(--messenger-blue-dark); /* Assombrir au survol */
+        }
+
+        .ai-generate-button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+
+        /* ===================================
+        Couleurs spécifiques pour le mode CLAIR (par défaut si .dark-mode n'est pas appliqué)
+        =================================== */
+
+        /* Cible le corps lorsque le mode sombre n'est PAS ACTIF */
+        body:not(.dark-mode) .ai-generate-button {
+            /* Utilisez les couleurs bleues distinctes de Gemini */
+            background-color: #1A73E8; /* Un bleu vif et reconnaissable de Google/Gemini */
+            color: white; /* Le texte reste blanc pour un bon contraste */
+        }
+
+        body:not(.dark-mode) .ai-generate-button:hover {
+            background-color: #1565C0; /* Une version légèrement plus foncée au survol */
+        }
+
+        /* ===================================
+        Couleurs spécifiques pour le mode SOMBRE
+        =================================== */
+
+        body.dark-mode .ai-generate-button {
+            background-color: #2E3A4B; /* Un gris-bleu foncé qui se fond bien dans le thème sombre */
+            color: #E0E0E0; /* Texte clair pour le contraste */
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4); /* Ombre plus prononcée en mode sombre */
+        }
+
+        body.dark-mode .ai-generate-button:hover {
+            background-color: #3B475C; /* Légèrement plus clair au survol en mode sombre */
+        }
+
+/* Pour le champ de saisie */
+.message-input {
+    flex: 1; /* Prend l'espace disponible */
+    border: none;
+    background-color: var(--messenger-light-gray);
+    border-radius: 20px;
+    padding: 8px 15px;
+    font-size: 0.95rem;
+    color: var(--messenger-text-color);
+    outline: none;
+}
+        .message-input:focus {
+        outline: none;
+        box-shadow: 0 0 0 2px var(--messenger-blue);
+        }
+
+
+/* ===================================
+   Menu des pièces jointes (Styles inchangés, juste pour référence)
+   ================================== */
+.attachment-menu {
+    display: none; /* Cache le menu par défaut */
+    position: absolute;
+    /* Ajustez bottom pour positionner au-dessus de la normal-chat-input-row */
+    /* Si normal-chat-input-row a une hauteur de 50px par exemple, et que le padding de message-input-area est de 10px */
+    /* alors bottom: (50px + 10px) = 60px serait un bon point de départ */
+    bottom: 60px; /* À ajuster précisément selon la hauteur de votre rangée d'input */
+    left: 10px; /* Aligner avec le bouton '+' */
+    background-color: white;
+    border-radius: 15px;
+    box-shadow: 0 4px 12px var(--messenger-shadow-color);
+    padding: 10px 0;
+    z-index: 100;
+
+    display: none;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity 0.2s ease-out, transform 0.2s ease-out;
+}
+
+.attachment-menu.show {
+    display: block;
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.attachment-option {
+    display: flex;
+    align-items: center;
+    padding: 10px 15px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    color: var(--messenger-text-color);
+    white-space: nowrap;
+}
+
+.attachment-option:hover {
+    background-color: var(--messenger-light-gray);
+}
+
+.attachment-option i {
+    font-size: 1.3rem;
+    margin-right: 10px;
+    color: var(--messenger-blue-color);
+}
+
+.messenger-blue {
+    color: var(--messenger-blue-color) !important;
+}
+
+        .input-action-button {
+        width: 2.5rem;
+        height: 2.5rem;
+        border-radius: 50%;
+        background-color: transparent; /* Pas de fond par défaut */
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        cursor: pointer;
+        font-size: 1.2rem; /* Pour les icônes */
+        color: var(--messenger-blue); /* Couleur des icônes */
+        transition: background-color 0.2s ease;
+        }
+        .input-action-button:hover {
+        background-color: var(--messenger-bg-gray);
+        }
+        .send-button {
+        background-color: var(--messenger-blue);
+        color: white;
+        margin-left: 0.5rem;
+        }
+        .send-button:hover {
+        background-color: var(--messenger-blue-hover);
+        }
+
+        /* Bouton de fermeture pour les overlays (profil/chat mobile) */
+        .close-button {
+        position: absolute;
+        top: 1rem;
+        left: 1rem;
+        font-size: 1.8rem; /* Plus grande icône */
+        color: var(--messenger-text-gray);
+        cursor: pointer;
+        z-index: 1000;
+        display: none; /* Caché par défaut, affiché par media queries ou JS */
+        }
+
+        /* SVG Icons (ajustées pour la couleur et la taille de Messenger) */
+        /* Supprimez les styles SVG individuels si vous utilisez Font Awesome ou des icônes vectorielles plus génériques */
+        /* Si vous utilisez des SVG inline, assurez-vous que leur 'fill' peut être hérité */
+        .svg-icon {
+        width: 1.2rem;
+        height: 1.2rem;
+        fill: currentColor; /* Hérite de la couleur du texte/bouton */
+        }
+
+
+
+
+
+        /* Dans votre fichier style.css */
+        .loading-dots:after {
+            content: ' .';
+            animation: dots 1s steps(5, end) infinite;
+        }
+        @keyframes dots {
+            0%, 20% {
+                color: rgba(0,0,0,0);
+                text-shadow:
+                    .25em 0 0 rgba(0,0,0,0),
+                    .5em 0 0 rgba(0,0,0,0);
+            }
+            40% {
+                color: var(--messenger-text-color); /* Couleur de votre texte */
+                text-shadow:
+                    .25em 0 0 rgba(0,0,0,0),
+                    .5em 0 0 rgba(0,0,0,0);
+            }
+            60% {
+                text-shadow:
+                    .25em 0 0 var(--messenger-text-color),
+                    .5em 0 0 rgba(0,0,0,0);
+            }
+            80%, 100% {
+                text-shadow:
+                    .25em 0 0 var(--messenger-text-color),
+                    .5em 0 0 var(--messenger-text-color);
+            }
+        }
+        /* Pour s'assurer que les bulles de messages chargées dynamiquement aient un style */
+        .message-bubble {
+            white-space: pre-wrap; /* Pour conserver les retours à la ligne de l'IA */
+            word-wrap: break-word; /* Pour les longs mots */
+        }
+    </style>
+
+
+
+
+<style>
+        /* Styles de base pour l'aperçu */
+        #thumbnail-container {
+            margin-top: 20px;
+            border: 1px solid #ccc;
+            padding: 10px;
+            display: flex; /* Pour organiser les éléments côte à côte */
+            align-items: center;
+            gap: 15px; /* Espace entre l'image et le texte */
+            max-width: 400px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            border-radius: 8px;
+            display: none; /* Masqué par défaut */
+        }
+        #thumbnail-preview {
+            width: 80px; /* Taille de la miniature */
+            height: 80px;
+            object-fit: cover; /* Recadre l'image pour qu'elle remplisse l'espace */
+            border-radius: 4px;
+        }
+        .file-info {
+            flex-grow: 1; /* Prend l'espace restant */
+        }
+        .file-info p {
+            margin: 0;
+            font-size: 0.9em;
+            color: #555;
+        }
+        .file-info .file-name {
+            font-weight: bold;
+            color: #333;
+        }
+        .remove-button {
+            background: none;
+            border: none;
+            color: red;
+            font-size: 1.2em;
+            cursor: pointer;
+            padding: 5px;
+            border-radius: 50%;
+            transition: background-color 0.2s;
+        }
+        .remove-button:hover {
+            background-color: #ffebeb;
+        }
+
+
+        /* Styles pour le conteneur de prévisualisation de l'image */
+        .image-preview-container {
+            background-color: #f0f2f5;
+            border-top: 1px solid #ddd;
+            padding: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            border-radius: 8px 8px 0 0; /* Coins supérieurs arrondis */
+            margin-bottom: 5px; /* Petit espace avant l'input de chat */
+        }
+
+        #imagePreview {
+            max-width: 100px; /* Taille de la miniature */
+            max-height: 100px;
+            object-fit: cover; /* Assure que l'image couvre la zone sans déformation */
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+
+        .image-preview-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .cancel-upload-button {
+            background-color: #dc3545; /* Rouge pour annuler */
+            color: white;
+            border: none;
+            border-radius: 50%; /* Bouton rond */
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 1.1em;
+            transition: background-color 0.3s ease;
+        }
+
+        .cancel-upload-button:hover {
+            background-color: #c82333;
+        }
+
+        .send-image-button {
+            background-color: #007bff; /* Bleu pour envoyer */
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 20px; /* Bouton pill */
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.9em;
+            transition: background-color 0.3s ease;
+        }
+
+        .send-image-button:hover {
+            background-color: #0056b3;
+        }
+
+        /* Styles pour les messages d'image dans la liste */
+        .message-list .message-item.image-message {
+            /* Style de base pour un message d'image, peut être ajusté */
+            max-width: 70%; /* Limite la largeur du message image */
+            padding: 5px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+        }
+
+        .message-list .message-item.image-message.sent {
+            background-color: #dcf8c6; /* Vert clair pour les messages envoyés */
+            align-self: flex-end; /* Aligner à droite si c'est un message envoyé */
+        }
+
+        .message-list .message-item.image-message.received {
+            background-color: #e0e0e0; /* Gris clair pour les messages reçus */
+            align-self: flex-start; /* Aligner à gauche si c'est un message reçu */
+        }
+
+        .message-list .image-message img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            display: block; /* Supprime l'espace sous l'image */
+        }
+    </style>
+</head>
+<body>
+
+
+
+
+    <div class="messenger-app-container">
+
+        <div class="conversations-list">
+            <div class="app-header">
+                <h1 class="app-title">Conversations</h1>
+                <div class="header-action-button dark-mode-toggle" title="Activer/Désactiver le Mode Sombre">
+                    <i class="fas fa-moon svg-icon"></i>
+                </div>
+            </div>
+            <div class="search-input-container">
+                <i class="fas fa-search search-icon"></i>
+                <input type="text" class="search-input" id="conversationSearchInput" placeholder="Rechercher Messenger">
+            </div>
+            <ul class="conversation-list-items" id="conversationList">
+                </ul>
+        </div>
+
+        <div class="chat-window">
+            <button class="close-button chat-close-button"><i class="fas fa-comments"></i></button>
+            <div class="chat-header" id="chatHeader">
+                <div class="user-info">
+                    <div class="user-avatar">
+                        <img src="" alt="Avatar de l'utilisateur" id="chatHeaderUserAvatar"> <span class="status-indicator"></span>
+                    </div>
+                    <span class="user-name" id="chatHeaderUserName"></span> </div>
+                <div class="actions">
+                    <button class="chat-action-button messenger-button-icon chat-back-button" title="Retour aux conversations">
+                        <i class="fas fa-comments"></i>
+                    </button>
+                    <i class="fas fa-phone action-icon"></i>
+                    <i class="fas fa-video action-icon"></i>
+                    <i class="fas fa-info-circle action-icon profile-details-button"></i>
+
+                </div>
+            </div>
+
+            <div class="message-area">
+                <ul class="message-list" id="messageList">
+                    </ul>
+            </div>
+
+            <div class="message-input-area">
+                <div id="imagePreviewContainer" class="image-preview-container" style="display: none;">
+                    <img id="imagePreview" src="#" alt="Aperçu de l'image">
+                    <div class="image-preview-actions">
+                        <button id="cancelImageUpload" class="cancel-upload-button"><i class="fas fa-times"></i></button>
+                        <button id="sendImageBtn" class="send-image-button"><i class="fa-solid fa-paper-plane"></i> Envoyer image</button>
+                    </div>
+                </div>
+
+
+                
+                <div class="normal-chat-input-row" id="normalChatInput">
+                    <button class="input-action-button attach-button" id="attachButton">
+                        <i class="fa-solid fa-plus-circle"></i>
+                    </button>
+                    <input type="text" class="message-input" id="normalMessageInput" placeholder="Aa">
+                    <button class="input-action-button"><i class="fa-solid fa-sticky-note"></i></button>
+                    <button class="input-action-button"><i class="fa-solid fa-image"></i></button>
+                    <button class="input-action-button send-button" id="sendMessageBtn">
+                        <i class="fa-solid fa-paper-plane"></i>
+                    </button>
+                </div>
+
+                <div class="attachment-menu" id="attachmentMenu">
+                    <div class="attachment-option" data-type="gallery">
+                        <i class="fa-solid fa-image messenger-blue"></i>
+                        <span>Galerie</span>
+                    </div>
+                    <div class="attachment-option" data-type="camera">
+                        <i class="fa-solid fa-camera messenger-blue"></i>
+                        <span>Appareil Photo</span>
+                    </div>
+                    <div class="attachment-option" data-type="file">
+                        <i class="fa-solid fa-file messenger-blue"></i>
+                        <span>Fichier</span>
+                    </div>
+                    <div class="attachment-option" data-type="location">
+                        <i class="fa-solid fa-location-dot messenger-blue"></i>
+                        <span>Localisation</span>
+                    </div>
+                </div>
+
+                <div class="ai-chat-input-row" id="aiChatInput" style="display: none;">
+                    <input type="text" class="ai-prompt-input" id="promptInput" placeholder="Posez une question à Gemini...">
+                    <button class="ai-generate-button" id="generateBtn"><i class="fas fa-robot"></i> Générer</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="user-profile-sidebar">
+            <button class="close-button profile-close-button"><i class="fas fa-times"></i></button>
+            <div class="user-profile-content">
+                <div class="user-avatar large-avatar">
+                    <img src="https://randomuser.me/api/portraits/thumb/women/85.jpg" alt="Avatar de l'utilisateur" id="userProfileAvatar">
+                </div>
+                <h2 class="profile-name" id="userProfileName">John Doe</h2>
+                <p class="profile-status" id="userProfileStatus">Actif maintenant</p>
+                
+                <div class="chat-header">
+                    <button class="back-button chat-close-button"><i class="fas fa-arrow-left"></i></button>
+                    
+                    <div class="chat-actions">
+                        <button id="exportSingleConversationBtn" class="chat-action-button messenger-button-icon" title="Exporter cette conversation">
+                            <i class="fas fa-file-export"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="profile-section">
+                    <div class="section-title">À propos</div>
+                    <div class="section-content" id="userProfileAbout">
+                        </div>
+                </div>
+
+                <div class="profile-section">
+                    <div class="section-title">Coordonnées</div>
+                    <div class="section-content" id="userProfileContact">
+
+                    </div>
+                </div>
+
+                <div class="profile-section">
+                    <div class="section-title">Phone number</div>
+                    <div class="section-content" id="userProfilePhoneNumber">
+
+                    </div>
+                </div>
+
+                <div class="profile-section">
+                    <div class="section-title">Médias partagés</div>
+                    <div class="section-content" id="userProfileSharedMedia">
+                        Pas de médias partagés.
+                    </div>
+                </div>
+
+                <button id="exportConversationsBtn" class="messenger-button">
+                    <i class="fas fa-file-export"></i> Exporter toutes les conversations (JSON)
+                </button>
+
+            </div>
+        </div>
+
+    </div>
+
+
+
+    <input type="file" id="imageUploadInput" accept="image/*" style="display: none;">
+
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script>
+
+        // Assurez-vous que ces lignes sont bien au début de votre script principal
+        const $attachButton = $('#attachButton');
+        const $attachmentMenu = $('#attachmentMenu');
+        const $imageUploadInput = $('#imageUploadInput');
+
+        // AJOUTEZ CES LIGNES DE DÉBOGAGE :
+        console.log("$attachButton (après sélection):", $attachButton);
+        console.log("$attachmentMenu (après sélection):", $attachmentMenu);
+        console.log("$imageUploadInput (après sélection):", $imageUploadInput);
+
+// Simule une base de données de conversations et de messages
+const conversationsData = {};
+
+$(document).ready(function() {
+    const $chat = $(".chat-window");
+    const $profile = $(".user-profile-sidebar");
+
+    let activeConversationId = null;
+
+     // SÉLECTION CORRECTE DES ÉLÉMENTS DE L'EN-TÊTE DU CHAT PAR LEUR ID
+    const $chatHeaderUserName = $("#chatHeaderUserName");
+    const $chatHeaderUserAvatar = $("#chatHeaderUserAvatar");
+    const $messageList = $("#messageList");
+    const $conversationList = $("#conversationList");
+    const $messageArea = $(".message-area");
+    const $conversationSidebar = $(".conversation-sidebar"); // Assurez-vous que cette variable est là
+    // Nouveaux éléments pour la conversation normale
+    const $normalMessageInput = $("#normalMessageInput"); // Sélecteur pour l'input normal
+    // Nouveaux éléments pour l'interface de l'IA
+    const $normalChatInput = $("#normalChatInput");
+    const $aiChatInput = $("#aiChatInput");
+    const $promptInput = $("#promptInput");
+    const $generateBtn = $("#generateBtn");
+    const $sendMessageBtn = $("#sendMessageBtn"); // Sélecteur pour le bouton d'envoi normal
+    // Éléments du profil (pour la mise à jour dynamique)
+    const $userProfileAvatar = $("#userProfileAvatar");
+    const $userProfileName = $("#userProfileName");
+    const $userProfileStatus = $("#userProfileStatus");
+    const $userProfileAbout = $("#userProfileAbout"); // Nouvel élément pour "À propos"
+    const $userProfileContact = $("#userProfileContact"); // Nouvel élément pour "Coordonnées"
+
+    // Nouvelle variable pour le bouton d'exportation de conversation unique
+    const $exportSingleConversationBtn = $("#exportSingleConversationBtn");
+
+
+    // Nouvelles clés pour localStorage
+    const LOCAL_STORAGE_CONVERSATIONS_KEY = "messengerConversationsData";
+    const LOCAL_STORAGE_ACTIVE_CONV_KEY = "messengerActiveConversationId"; // NOUVELLE CLÉ
+
+    // Sélectionnez le bouton de retour (mettez à jour le sélecteur si vous avez renommé la classe)
+    const $chatBackButton = $(".chat-back-button"); // Ancien: $(".chat-close-button")
+
+
+    // Variables pour la gestion du swipe (pour mobile)
+    let startX = 0;
+    let endX = 0;
+    const swipeThreshold = 50; // Nombre de pixels pour détecter un swipe significatif
+
+
+    // --- Sélecteurs des nouveaux éléments (à ajouter au début de votre script) ---
+    const $attachButton = $('#attachButton');
+    const $attachmentMenu = $('#attachmentMenu');
+    const $galleryOption = $('#galleryOption'); // Le nouvel ID pour l'option Galerie
+    const $imageUploadInput = $('#imageUploadInput'); // L'input de fichier caché
+
+
+    // Sélecteurs jQuery pour les éléments pertinents
+    const $imagePreviewContainer = $('#imagePreviewContainer');
+    const $imagePreview = $('#imagePreview');
+    const $cancelImageUpload = $('#cancelImageUpload');
+    const $sendImageBtn = $('#sendImageBtn');
+
+
+    const $conversationSearchInput = $(".search-input");
+    // ===================================
+    // Gestion du localStorage
+    // ===================================
+
+    const LOCAL_STORAGE_KEY = "messengerConversationsData";
+
+
+    const $body = $('body');
+
+    // Assurez-vous que cette fonction est bien définie comme dans les réponses précédentes
+    function createMessageBubble(msg, currentUserId, correspondentAvatarUrl) {
+        const isMyMessage = msg.senderId === currentUserId;
+        const messageClass = isMyMessage ? 'from-me' : 'from-other';
+        
+        let messageHtml = '';
+
+        if (isMyMessage) {
+            // Mon message : pas d'avatar
+            messageHtml = `
+                <li class="message-item ${messageClass}">
+                    <div class="message-bubble">${msg.text}</div>
+                    <span class="message-time">${msg.time}</span>
+                </li>
+            `;
+        } else {
+            // Message de l'autre : avec avatar
+            messageHtml = `
+                <li class="message-item ${messageClass}">
+                    <div class="message-avatar">
+                        <img src="${correspondentAvatarUrl}xxxxxxxxxxxxxxxxxxx" alt="Avatarrrrrrrrrrrrrrrrrrrrrrrrr">
+                    </div>
+                    <div class="message-content">
+                        <div class="message-bubble">${msg.text}</div>
+                        <span class="message-time">${msg.time}</span>
+                    </div>
+                </li>
+            `;
+        }
+        return messageHtml;
+    }
+
+
+
+    $attachButton.on('click', function(e) {
+        e.stopPropagation(); // Empêche le clic de se propager au body immédiatement
+        $attachmentMenu.toggleClass('show'); // Bascule la classe 'show'
+    });
+
+
+
+    // Fermer le menu si on clique en dehors
+    $body.on('click', function(e) {
+        // Vérifie si le clic n'est pas sur le menu lui-même ou sur le bouton d'attache
+        if (!$attachmentMenu.is(e.target) && $attachmentMenu.has(e.target).length === 0 &&
+            !$attachButton.is(e.target) && $attachButton.has(e.target).length === 0) {
+            
+            $attachmentMenu.removeClass('show');
+        }
+    });
+
+    // Optionnel : Fermer le menu si on clique sur le champ de saisie normal
+    $normalMessageInput.on('focus', function() {
+        $attachmentMenu.removeClass('show');
+    });
+
+    
+
+
+    $('.attachment-option').on('click', function() {
+        const type = $(this).data('type');
+        $attachmentMenu.removeClass('show'); // Ferme le menu après sélection
+
+        switch (type) {
+            case 'gallery':
+                // alert("Ouvrir la galerie d'images...");
+                $imageUploadInput.click();
+                break;
+            case 'camera':
+                alert("Ouvrir l'appareil photo...");
+                break;
+            case 'file':
+                alert("Ouvrir le sélecteur de fichiers...");
+                break;
+            case 'location':
+                alert("Partager la localisation...");
+                break;
+            default:
+                console.log("Option non reconnue : " + type);
+        }
+    });
+
+    // Gérer la sélection de l'image et afficher la prévisualisation
+    $imageUploadInput.on('change', function(event) {
+        const file = event.target.files[0];
+
+        if (file) {
+            currentImageFile = file; // Stocke le fichier
+            const reader = new FileReader();
+
+            reader.onload = function(e) {
+                $imagePreview.attr('src', e.target.result);
+                $imagePreviewContainer.css('display', 'flex'); // Affiche la prévisualisation
+                $normalChatInput.css('display', 'none'); // Cache l'input de chat normal
+            };
+
+            reader.readAsDataURL(file);
+        } else {
+            // Si aucun fichier n'est sélectionné (ex: l'utilisateur annule)
+            currentImageFile = null;
+            $imagePreviewContainer.css('display', 'none');
+            $normalChatInput.css('display', 'flex'); // Réaffiche l'input de chat normal
+        }
+    });
+    
+
+    // Annuler l'upload de l'image
+    $cancelImageUpload.on('click', function() {
+        $imagePreviewContainer.css('display', 'none');
+        $normalChatInput.css('display', 'flex'); // Réaffiche l'input de chat normal
+        $imageUploadInput.val(''); // Réinitialise l'input de fichier
+        currentImageFile = null;
+    });
+
+    // Bouton "Envoyer image" de la prévisualisation
+    $sendImageBtn.on('click', sendMessage); // Appelle sendMessage quand on clique
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const attachButton = document.getElementById('attachButton');
+        const attachmentMenu = document.getElementById('attachmentMenu');
+        const galleryOption = document.getElementById('galleryOption');
+        const imageUploadInput = document.getElementById('imageUploadInput');
+        const imagePreviewContainer = document.getElementById('imagePreviewContainer');
+        const imagePreview = document.getElementById('imagePreview');
+        const cancelImageUpload = document.getElementById('cancelImageUpload');
+        const sendImageBtn = document.getElementById('sendImageBtn');
+        const messageList = document.getElementById('messageList');
+        const normalChatInput = document.getElementById('normalChatInput');
+        const normalMessageInput = document.getElementById('normalMessageInput'); // Ajouté pour la réinitialisation
+
+        let currentImageFile = null; // Pour stocker le fichier sélectionné temporairement
+
+        // Gérer l'affichage/masquage du menu d'attachement
+        attachButton.addEventListener('click', () => {
+            attachmentMenu.classList.toggle('active'); // Assurez-vous d'avoir un style CSS pour .attachment-menu.active
+        });
+
+        // Cacher le menu d'attachement quand on clique ailleurs
+        document.addEventListener('click', (event) => {
+            if (!attachButton.contains(event.target) && !attachmentMenu.contains(event.target)) {
+                attachmentMenu.classList.remove('active');
+            }
+        });
+
+        // Quand l'option "Galerie" est cliquée, déclencher l'input de fichier
+        galleryOption.addEventListener('click', () => {
+            imageUploadInput.click(); // Ouvre la boîte de dialogue de sélection de fichier
+            attachmentMenu.classList.remove('active'); // Cache le menu après sélection
+        });
+
+        // Gérer la sélection de l'image et afficher la prévisualisation
+        imageUploadInput.addEventListener('change', function(event) {
+            const file = event.target.files[0];
+
+            if (file) {
+                currentImageFile = file; // Stocke le fichier
+                const reader = new FileReader();
+
+                reader.onload = function(e) {
+                    imagePreview.src = e.target.result;
+                    imagePreviewContainer.style.display = 'flex'; // Affiche la prévisualisation
+                    normalChatInput.style.display = 'none'; // Cache l'input de chat normal
+                };
+
+                reader.readAsDataURL(file);
+            } else {
+                // Si aucun fichier n'est sélectionné (ex: l'utilisateur annule)
+                currentImageFile = null;
+                imagePreviewContainer.style.display = 'none';
+                normalChatInput.style.display = 'flex'; // Réaffiche l'input de chat normal
+            }
+        });
+
+        // Annuler l'upload de l'image
+        cancelImageUpload.addEventListener('click', () => {
+            imagePreviewContainer.style.display = 'none';
+            normalChatInput.style.display = 'flex'; // Réaffiche l'input de chat normal
+            imageUploadInput.value = ''; // Réinitialise l'input de fichier
+            currentImageFile = null;
+        });
+
+        // Envoyer l'image (simulé comme un message)
+        sendImageBtn.addEventListener('click', () => {
+            if (currentImageFile) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const imageUrl = e.target.result;
+
+                    // Créer un élément de message d'image
+                    const messageItem = document.createElement('li');
+                    messageItem.classList.add('message-item', 'image-message', 'sent'); // 'sent' pour simuler un message envoyé
+
+                    const imageElement = document.createElement('img');
+                    imageElement.src = imageUrl;
+                    imageElement.alt = "Image envoyée";
+
+                    messageItem.appendChild(imageElement);
+                    messageList.appendChild(messageItem);
+
+                    // Faites défiler jusqu'au dernier message
+                    messageList.scrollTop = messageList.scrollHeight;
+
+                    // Réinitialiser l'interface après "envoi"
+                    imagePreviewContainer.style.display = 'none';
+                    normalChatInput.style.display = 'flex';
+                    imageUploadInput.value = ''; // Efface le fichier de l'input
+                    currentImageFile = null; // Réinitialise le fichier stocké
+                };
+                reader.readAsDataURL(currentImageFile);
+
+                // Dans un VRAI scénario, vous enverriez currentImageFile au serveur ici.
+                // Exemple avec fetch :
+                /*
+                const formData = new FormData();
+                formData.append('image', currentImageFile);
+                fetch('/upload-image', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => console.log('Image uploadée avec succès:', data))
+                .catch(error => console.error('Erreur lors de l\'upload de l\'image:', error));
+                */
+            }
+        });
+
+        // Gérer l'envoi de messages texte (si vous avez un bouton d'envoi de texte)
+        const sendMessageBtn = document.getElementById('sendMessageBtn');
+        if (sendMessageBtn) {
+            sendMessageBtn.addEventListener('click', () => {
+                const messageText = normalMessageInput.value.trim();
+                if (messageText) {
+                    const messageItem = document.createElement('li');
+                    messageItem.classList.add('message-item', 'sent'); // Exemple de classe pour message envoyé
+                    messageItem.textContent = messageText;
+                    messageList.appendChild(messageItem);
+                    normalMessageInput.value = ''; // Efface l'input
+
+                    // Faites défiler jusqu'au dernier message
+                    messageList.scrollTop = messageList.scrollHeight;
+                }
+            });
+        }
+
+        // Gérer l'envoi de messages texte avec la touche Entrée
+        normalMessageInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault(); // Empêche le saut de ligne par défaut
+                sendMessageBtn.click(); // Simule un clic sur le bouton d'envoi
+            }
+        });
+    });
+
+
+
+
+
+
+
+
+
+
+    // Fonction générique pour afficher les messages dans n'importe quelle liste
+    function renderMessagesToList(messageListElement, messages, currentUserId) {
+        messageListElement.empty();
+        messages.forEach(msg => {
+            const messageHtml = createMessageBubble(msg, currentUserId);
+            messageListElement.append(messageHtml);
+        });
+        // Défilement automatique uniquement pour la liste principale, pas pour le profil
+        if (messageListElement.is($messageList)) {
+            messageListElement.scrollTop(messageListElement[0].scrollHeight);
+        }
+    }
+
+
+
+    // ===================================
+    // NOUVELLE FONCTION : Exporter la conversation active vers un fichier JSON
+    // ===================================
+    function exportSingleConversationToFile() {
+        if (!activeConversationId || !conversationsData[activeConversationId]) {
+            alert("Veuillez sélectionner une conversation pour l'exporter.");
+            return;
+        }
+
+        const conversationToExport = conversationsData[activeConversationId];
+        // Nous allons exporter uniquement les messages de cette conversation
+        // et les informations de base du correspondant.
+        const exportData = {
+            id: conversationToExport.id,
+            name: conversationToExport.name,
+            avatar: conversationToExport.avatar,
+            about: conversationToExport.about,
+            contact: conversationToExport.contact,
+            messages: conversationToExport.messages // Les messages de la conversation
+        };
+
+        const jsonString = JSON.stringify(exportData, null, 2); // Formatage lisible
+
+        const blob = new Blob([jsonString], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        // Nom du fichier : par exemple "Conversation_avec_Alice.json"
+        a.download = `Conversation_avec_${conversationToExport.name.replace(/\s/g, '_')}.json`;
+
+        document.body.appendChild(a);
+        a.click();
+
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+
+        console.log(`Conversation avec ${conversationToExport.name} exportée vers ${a.download}`);
+        alert(`La conversation avec '${conversationToExport.name}' a été exportée dans '${a.download}' !`);
+    }
+
+
+    // ===================================
+    // Événement pour le bouton d'exportation de conversation unique
+    // ===================================
+    $exportSingleConversationBtn.on('click', exportSingleConversationToFile);
+
+
+
+
+
+
+    // Fonction pour charger les données depuis localStorage
+    function loadConversationsFromLocalStorage() {
+        try {
+            const storedData = localStorage.getItem(LOCAL_STORAGE_KEY);
+            if (storedData) {
+                const parsedData = JSON.parse(storedData);
+                // Vérifier si les données sont valides (par exemple, est un objet)
+                if (typeof parsedData === 'object' && parsedData !== null && Object.keys(parsedData).length > 0) {
+                    console.log("Conversations chargées depuis localStorage.");
+                    return parsedData;
+                }
+            }
+        } catch (e) {
+            console.error("Erreur lors du chargement ou de l'analyse JSON depuis localStorage:", e);
+            localStorage.removeItem(LOCAL_STORAGE_KEY); // Nettoyer les données corrompues
+        }
+        console.log("Aucune conversation valide trouvée dans localStorage, ou erreur. Utilisation des données initiales.");
+        // Retourne les données initiales si rien n'est trouvé ou s'il y a une erreur
+        return {
+                    "SharonRoseIA": { // Nouvel ID pour la conversation Gemini
+                        name: "Sharon Rose IA",
+                        avatar: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcST5rQlP8qzJSM7RbZlWnDILzTJWTHptxZh2Q&s", // Utilisez un logo Gemini
+                        thumbnail: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQvLBpSw3kWG6SFC5mQuTyMezAz0pBBzXTvYg&s", // Version plus petite
+                        status: "online", // L'IA est toujours 'online' !
+                        lastMessage: "Posez-moi une question !",
+                        isAI: true, // PROPRIÉTÉ CLÉ : Indique que c'est une conversation IA
+                        messages: [
+                            // Chaque message est maintenant un objet avec 'contentType' et 'content'
+                            { type: "other", contentType: "text", content: "Bonjour ! Sharon Rose IA. Comment puis-je vous aider aujourd'hui ?", time: "09:00 AM" }
+                            // Les futures interactions avec Gemini seront ajoutées ici dynamiquement
+                        ],
+                        about: "Je suis un Api d'un grand modèle linguistique, entraîné par Google.",
+                        contact: "https://gemini.google.com/"
+                    },
+                    "johnDoe": {
+                        name: "Galilée Doe",
+                        avatar: "https://randomuser.me/api/portraits/men/50.jpg", // Grande image pour le profil et l'en-tête du chat
+                        thumbnail: "https://randomuser.me/api/portraits/thumb/men/60.jpg", // Petite image pour la liste des conversations
+                        status: "online",
+                        lastMessage: "Hey, comment vas-tu ?",
+                        messages: [
+                            // Chaque message est maintenant un objet avec 'contentType' et 'content'
+                            { type: "other", contentType: "text", content: "Hey, comment vas-tu ?", time: "11:30 AM" },
+                            { type: "me", contentType: "text", content: "Salut ! Je vais super bien, merci !", time: "11:35 AM" },
+                            { type: "other", contentType: "text", content: "Cool ! Quoi de neuf de ton côté ?", time: "11:40 AM" },
+                            { type: "me", contentType: "text", content: "Pas grand chose, juste du code !", time: "11:45 AM" }
+                        ],
+                        about: "Bonjour ! Je suis Galilée et j'adore coder et explorer les nouvelles technologies.",
+                        contact: "+243 823 456 789<br>john.doe@example.com"
+                    },
+                    "aliceSmith": {
+                        name: "Alice Team",
+                        avatar: "https://randomuser.me/api/portraits/women/60.jpg",
+                        thumbnail: "https://randomuser.me/api/portraits/thumb/women/30.jpg",
+                        status: "offline",
+                        lastMessage: "Can we meet tomorrow?",
+                        messages: [
+                            { type: "other", contentType: "text", content: "Salut l'équipe ! On a une réunion à 14h, c'est bon pour tout le monde ?", time: "09:00 AM" },
+                            { type: "me", contentType: "text", content: "Oui, c'est OK pour moi ! Je serai là.", time: "09:05 AM" },
+                            { type: "other", contentType: "text", content: "Pour moi aussi, pas de souci.", time: "09:07 AM" },
+                            { type: "me", contentType: "text", content: "Parfait, à tout à l'heure !", time: "09:10 AM" },
+                            { type: "other", contentType: "text", content: "N'oubliez pas les rapports !", time: "09:15 AM" }
+                        ],
+                        about: "Coordinatrice de projet passionnée par le travail d'équipe et l'innovation.",
+                        contact: "+243 812 345 678<br>alice.smith@example.com"
+                    },
+                    "bobJohnson": {
+                        name: "Bob Johnson",
+                        avatar: "https://randomuser.me/api/portraits/men/66.jpg",
+                        thumbnail: "https://randomuser.me/api/portraits/thumb/men/66.jpg",
+                        status: "online",
+                        lastMessage: "Ça marche !",
+                        messages: [
+                            { type: "other", contentType: "text", content: "Salut ! C'est bon pour ce soir ?", time: "18:00 PM" },
+                            { type: "me", contentType: "text", content: "Oui, sans problème. J'arrive vers 19h.", time: "18:05 PM" },
+                            { type: "other", contentType: "text", content: "Super, à tout de suite !", time: "18:10 PM" }
+                        ],
+                        about: "Développeur full-stack, toujours prêt pour de nouveaux défis techniques.",
+                        contact: "+243 890 123 456<br>bob.johnson@example.com"
+                    },
+                    "elodieManiema": {
+                        name: "Élodie Mbombo",
+                        avatar: "https://randomuser.me/api/portraits/women/62.jpg",
+                        thumbnail: "https://randomuser.me/api/portraits/thumb/women/62.jpg",
+                        status: "online",
+                        lastMessage: "Le projet avance bien, on a eu le feu vert pour la phase 2 !",
+                        messages: [
+                            { type: "other", contentType: "text", content: "Salut Élodie, des nouvelles sur le projet 'Lumière pour Tous' ? La réunion de ce matin était cruciale.", time: "09:10 AM" },
+                            { type: "me", contentType: "text", content: "Bonjour ! Oui, excellente nouvelle : on a eu le feu vert pour la phase 2 ! Les fonds sont débloqués.", time: "09:15 AM" },
+                            { type: "other", contentType: "text", content: "Fantastique ! Bravo à toute l'équipe. Quand peut-on coordonner pour le déploiement ?", time: "09:20 AM" },
+                            { type: "me", contentType: "text", content: "Dès que possible. Je t'envoie un doodle pour caler une rencontre cette semaine.", time: "09:25 AM" }
+                        ],
+                        about: "Coordinatrice de projets humanitaires, dédiée au développement et à l'accès à l'énergie en RDC.",
+                        contact: "+243 899 123 456<br>elodie.mbombo@ngo.org"
+                    },
+                    "patrickKivu": {
+                        name: "Patrick Kabongo",
+                        avatar: "https://randomuser.me/api/portraits/men/63.jpg",
+                        thumbnail: "https://randomuser.me/api/portraits/thumb/men/63.jpg",
+                        status: "offline",
+                        lastMessage: "Tu as vu les derniers défis TikTok sur la danse congolaise ?",
+                        messages: [
+                            { type: "me", contentType: "text", content: "Patrick, t'es là ? Je viens de voir une vidéo de dingue sur TikTok, le nouveau challenge de danse congolaise !", time: "14:00 PM" },
+                            { type: "other", contentType: "text", content: "Ah oui ? Envoyez-moi le lien, je dois voir ça ! Mon réseau est un peu lent aujourd'hui, haha.", time: "14:15 PM" },
+                            { type: "me", contentType: "text", content: "Je t'envoie ça. Faut absolument que tu essaies les pas, c'est contagieux !", time: "14:20 PM" },
+                            { type: "other", contentType: "text", content: "Mdr, je suis plus musique que danse, mais je vais regarder ! La prochaine fois on fait un live ensemble.", time: "14:30 PM" }
+                        ],
+                        about: "Influenceur et créateur de contenu passionné par la culture congolaise et les tendances virales.",
+                        contact: "+243 811 223 344<br>patrick.kabongo@social.com"
+                    },
+                    "graciaKin": {
+                        name: "Gracia Ngalula",
+                        avatar: "https://randomuser.me/api/portraits/women/69.jpg",
+                        thumbnail: "https://randomuser.me/api/portraits/thumb/women/69.jpg",
+                        status: "online",
+                        lastMessage: "La commande de pagnes est prête pour l'expédition.",
+                        messages: [
+                            { type: "other", contentType: "text", content: "Gracia, bonjour ! Je voulais savoir où en était ma commande de pagnes personnalisés.", time: "10:00 AM" },
+                            { type: "me", contentType: "text", content: "Bonjour ! Excellente nouvelle, elle est prête pour l'expédition. Je vous envoie le numéro de suivi dans la foulée.", time: "10:05 AM" },
+                            { type: "other", contentType: "text", content: "Parfait ! Merci beaucoup pour votre rapidité. Hâte de les recevoir !", time: "10:10 AM" },
+                            { type: "me", contentType: "text", content: "Avec plaisir ! N'hésitez pas si vous avez d'autres besoins. Merci de votre confiance.", time: "10:15 AM" }
+                        ],
+                        about: "Artisan-designer de textiles africains, spécialisée dans les pagnes traditionnels et modernes.",
+                        contact: "+243 977 889 001<br>gracia.ngalula@textiles.cd"
+                    },
+                    "cedricLubum": {
+                        name: "Cédric Tshibangu",
+                        avatar: "https://randomuser.me/api/portraits/men/65.jpg",
+                        thumbnail: "https://randomuser.me/api/portraits/thumb/men/65.jpg",
+                        status: "online",
+                        lastMessage: "La séance de coaching a été très enrichissante.",
+                        messages: [
+                            { type: "me", contentType: "text", content: "Salut Cédric, merci pour la séance de coaching d'hier. C'était vraiment éclairant pour ma stratégie marketing.", time: "08:30 AM" },
+                            { type: "other", contentType: "text", content: "De rien ! Heureux d'avoir pu t'aider. Les retours sont positifs de ton côté ?", time: "08:35 AM" },
+                            { type: "me", contentType: "text", content: "Totalement. J'ai déjà commencé à implémenter tes conseils. Je te tiens au courant de l'évolution.", time: "08:40 AM" },
+                            { type: "other", contentType: "text", content: "Super ! Reste focalisé sur les objectifs que nous avons définis. À très bientôt !", time: "08:45 AM" }
+                        ],
+                        about: "Coach en développement personnel et professionnel, aide les jeunes entrepreneurs en RDC.",
+                        contact: "+243 852 369 147<br>cedric.tshibangu@coaching.cd"
+                    },
+                    "christelleKasai": {
+                        name: "Christelle Mpiana",
+                        avatar: "https://randomuser.me/api/portraits/women/99.jpg",
+                        thumbnail: "https://randomuser.me/api/portraits/thumb/women/99.jpg",
+                        status: "offline",
+                        lastMessage: "On se voit au marché central pour la livraison des vivres ?",
+                        messages: [
+                            { type: "me", contentType: "text", content: "Salut Christelle, tu es disponible demain matin ? On doit organiser la livraison des vivres pour le centre d'accueil.", time: "16:00 PM" },
+                            { type: "other", contentType: "text", content: "Oui, je suis libre ! On se donne rendez-vous au marché central à 9h ? On pourra charger directement là-bas.", time: "16:10 PM" },
+                            { type: "me", contentType: "text", content: "Parfait pour moi. Je serai là avec l'équipe de bénévoles. Merci pour ton aide habituelle !", time: "16:15 PM" },
+                            { type: "other", contentType: "text", content: "Pas de souci, c'est pour la bonne cause. À demain !", time: "16:20 PM" }
+                        ],
+                        about: "Bénévole active dans plusieurs associations caritatives, très impliquée dans sa communauté.",
+                        contact: "+243 841 597 263<br>christelle.mpiana@charity.org"
+                    },
+                    "dadiKongo": {
+                        name: "Dadi Mputu",
+                        avatar: "https://randomuser.me/api/portraits/men/65.jpg",
+                        thumbnail: "https://randomuser.me/api/portraits/thumb/men/65.jpg",
+                        status: "online",
+                        lastMessage: "Les résultats du match de l'AS V.Club sont tombés !",
+                        messages: [
+                            { type: "other", contentType: "text", content: "Alors Dadi, t'as vu le match de V.Club hier soir ? J'ai raté le début, j'étais coincé dans les embouteillages.", time: "07:30 AM" },
+                            { type: "me", contentType: "text", content: "Salut ! Oui, j'ai tout suivi. V.Club a cartonné, victoire écrasante ! Les fans sont en folie sur les réseaux.", time: "07:35 AM" },
+                            { type: "other", contentType: "text", content: "Ah super ! Je vais revoir les highlights. Tu penses qu'ils vont maintenir ce rythme pour la suite de la saison ?", time: "07:40 AM" },
+                            { type: "me", contentType: "text", content: "Clairement ! L'équipe est en forme. On devrait aller au stade ensemble pour le prochain match à domicile.", time: "07:45 AM" }
+                        ],
+                        about: "Fan inconditionnel de football congolais et commentateur sportif amateur sur les réseaux sociaux.",
+                        contact: "+243 833 777 999<br>dadi.mputu@sports.cd"
+                    },
+                    "giselleNord": {
+                        name: "Gisèle Bakonga",
+                        avatar: "https://randomuser.me/api/portraits/women/33.jpg",
+                        thumbnail: "https://randomuser.me/api/portraits/thumb/women/33.jpg",
+                        status: "online",
+                        lastMessage: "La présentation pour les investisseurs est prête.",
+                        messages: [
+                            { type: "me", contentType: "text", content: "Gisèle, la présentation pour les investisseurs est finalisée. Je l'ai revue une dernière fois.", time: "11:00 AM" },
+                            { type: "other", contentType: "text", content: "Parfait ! Envoie-la moi pour que je puisse la relire avant la réunion de demain. Merci pour ton efficacité.", time: "11:05 AM" },
+                            { type: "me", contentType: "text", content: "C'est envoyé. J'espère que ça les convaincra de notre potentiel.", time: "11:10 AM" },
+                            { type: "other", contentType: "text", content: "Avec la qualité de ton travail, je suis confiante. À demain !", time: "11:15 AM" }
+                        ],
+                        about: "Consultante en finance et entrepreneuriat, accompagne les startups congolaises dans leur recherche de financement.",
+                        contact: "+243 810 500 600<br>giselle.bakonga@consulting.cd"
+                    },
+                    "jeromeSud": {
+                        name: "Jérôme Lusamba",
+                        avatar: "https://randomuser.me/api/portraits/men/21.jpg",
+                        thumbnail: "https://randomuser.me/api/portraits/thumb/men/21.jpg",
+                        status: "offline",
+                        lastMessage: "La récolte de manioc a été exceptionnelle cette saison.",
+                        messages: [
+                            { type: "other", contentType: "text", content: "Salut Jérôme, j'espère que la récolte s'est bien passée dans ta ferme.", time: "15:30 PM" },
+                            { type: "me", contentType: "text", content: "Bonjour ! Oui, ça a été exceptionnel cette saison, particulièrement pour le manioc ! Dieu merci.", time: "15:35 PM" },
+                            { type: "other", contentType: "text", content: "Génial ! C'est une excellente nouvelle pour la communauté. Vous avez prévu une nouvelle distribution ?", time: "15:40 PM" },
+                            { type: "me", contentType: "text", content: "Absolument. Nous allons organiser une vente solidaire pour soutenir les familles dans le besoin. Je vous envoie les détails.", time: "15:45 PM" }
+                        ],
+                        about: "Agriculteur et leader communautaire, œuvrant pour la sécurité alimentaire.",
+                        contact: "+243 822 444 666<br>jerome.lusamba@agriculture.cd"
+                    },
+                    "nadineKatanga": {
+                        name: "Nadine Tshilombo",
+                        avatar: "https://randomuser.me/api/portraits/women/70.jpg",
+                        thumbnail: "https://randomuser.me/api/portraits/thumb/women/70.jpg",
+                        status: "online",
+                        lastMessage: "Le nouveau single de Fally Ipupa est une bombe !",
+                        messages: [
+                            { type: "me", contentType: "text", content: "Nadine, tu as écouté le nouveau single de Fally Ipupa ? C'est une tuerie !", time: "19:00 PM" },
+                            { type: "other", contentType: "text", content: "OMG oui ! Je l'ai en boucle depuis ce matin. Il a encore frappé très fort !", time: "19:05 PM" },
+                            { type: "me", contentType: "text", content: "Les paroles, le rythme... tout est parfait. C'est le genre de son qui te met direct de bonne humeur.", time: "19:10 PM" },
+                            { type: "other", contentType: "text", content: "Exactement ! J'ai déjà partagé avec tous mes contacts. Fally, c'est la légende !", time: "19:15 PM" }
+                        ],
+                        about: "Passionnée de musique congolaise, toujours à l'affût des dernières sorties et des tendances afro-urbaines.",
+                        contact: "+243 815 900 123<br>nadine.tshilombo@musicfan.cd"
+                    },
+                    "olivierOrientale": {
+                        name: "Olivier Kalala",
+                        avatar: "https://randomuser.me/api/portraits/men/82.jpg",
+                        thumbnail: "https://randomuser.me/api/portraits/thumb/men/82.jpg",
+                        status: "offline",
+                        lastMessage: "J'ai besoin de ton avis sur la nouvelle stratégie digitale.",
+                        messages: [
+                            { type: "other", contentType: "text", content: "Salut Olivier, quand aurais-tu un moment pour discuter de la nouvelle stratégie digitale ? J'ai quelques idées à te soumettre.", time: "13:00 PM" },
+                            { type: "me", contentType: "text", content: "Bonjour ! Je suis un peu pris ce matin, mais je suis libre cet après-midi après 15h. Envoie-moi un bref aperçu.", time: "13:10 PM" },
+                            { type: "other", contentType: "text", content: "Super ! Je t'envoie ça. Je pense que tes conseils seront précieux pour le déploiement.", time: "13:15 PM" },
+                            { type: "me", contentType: "text", content: "Pas de souci. On en parle plus en détail tout à l'heure.", time: "13:20 PM" }
+                        ],
+                        about: "Expert en marketing digital et communication, aide les entreprises congolaises à se digitaliser.",
+                        contact: "+243 820 000 333<br>olivier.kalala@digital.cd"
+                    }
+                };
+    }
+
+    // Fonction pour sauvegarder les données dans localStorage
+    function saveConversationsToLocalStorage() {
+        try {
+            localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(conversationsData));
+            console.log("Conversations sauvegardées dans localStorage.");
+        } catch (e) {
+            console.error("Erreur lors de la sauvegarde dans localStorage:", e);
+            alert("Erreur lors de la sauvegarde automatique de vos conversations. Votre navigateur est peut-être en mode privé ou l'espace est insuffisant.");
+        }
+    }
+
+    // Initialisez conversationsData au début du script en le chargeant ou en utilisant les données par défaut
+    let conversationsData = loadConversationsFromLocalStorage();
+
+
+    // Votre fonction pour charger une conversation spécifique
+    function loadConversation(conversationId) {
+        activeConversationId = conversationId;
+        const conversation = conversationsData[conversationId];
+
+        if (conversation) {
+            // Mettre à jour l'en-tête du chat avec les infos du correspondant
+            $('#chatHeaderName').text(conversation.name);
+            $('#chatHeaderAvatar').attr('src', conversation.avatar);
+
+            // Récupérer les messages pour cette conversation
+            const messagesKey = 'messages_' + conversationId;
+            const messages = JSON.parse(localStorage.getItem(messagesKey)) || [];
+            
+            // C'est ici que nous récupérons l'avatar du correspondant
+            const correspondentAvatarUrl = conversation.avatar; 
+            
+            // APPEL de updateChatMessages avec les messages et l'avatar
+            updateChatMessages(messages, correspondentAvatarUrl); 
+
+            // Gérer l'affichage de la barre de saisie IA vs normale
+            if (conversation.isAI) {
+                $('#normalChatInput').hide();
+                $('#aiChatInput').show();
+            } else {
+                $('#normalChatInput').show();
+                $('#aiChatInput').hide();
+            }
+
+            // Ajouter la classe 'active' au contact sélectionné
+            $('.conversation-item').removeClass('active');
+            $(`[data-conversation-id="${conversationId}"]`).addClass('active');
+
+        } else {
+            // Gérer le cas où la conversation n'existe pas ou n'est pas trouvée
+            $messageList.empty();
+            $('#chatHeaderName').text('Sélectionnez une conversation');
+            $('#chatHeaderAvatar').attr('src', 'path/to/default-avatar.jpg');
+            $('#normalChatInput').hide(); // Cacher les deux inputs si pas de conversation
+            $('#aiChatInput').hide();
+            $messageArea.html('<li style="padding: 1rem; text-align: center; color: var(--messenger-text-gray);">Sélectionnez une conversation pour commencer.</li>');
+        }
+    }
+
+    // NOUVEAU: Tente de charger l'ID de la dernière conversation active depuis localStorage.
+    activeConversationId = localStorage.getItem(LOCAL_STORAGE_ACTIVE_CONV_KEY);
+    // Si l'ID est trouvé, mais la conversation n'existe plus dans les données (par exemple supprimée),
+    // on le met à null pour qu'une nouvelle conversation soit sélectionnée.
+    if (activeConversationId && !conversationsData[activeConversationId]) {
+        activeConversationId = null;
+    }
+
+
+
+    
+
+
+    // Nouvelle variable pour le bouton d'exportation
+    const $exportConversationsBtn = $("#exportConversationsBtn");
+
+    // Variable pour stocker la conversation actuellement active
+    // let activeConversationId = null;
+
+    // Générer la liste des conversations dynamiquement
+    function generateConversationList() {
+        let listHtml = '';
+        if (Object.keys(conversationsData).length === 0) {
+            $conversationList.html('<li style="padding: 1rem; color: var(--messenger-text-gray);">Aucune conversation trouvée.</li>');
+            return;
+        }
+
+        // Récupérer le texte de recherche (maintenant depuis l'input de recherche)
+        // La méthode .val() fonctionne aussi avec un sélecteur de classe si un seul élément correspond
+        const searchTerm = $conversationSearchInput.val().toLowerCase(); // Convertir en minuscules pour une recherche insensible à la casse
+
+
+        for (const convId in conversationsData) {
+            if (conversationsData.hasOwnProperty(convId)) {
+                const conv = conversationsData[convId];
+                // CONDITION DE FILTRAGE : Vérifie si le nom ou le dernier message contient le terme de recherche
+                if (conv.name.toLowerCase().includes(searchTerm) || conv.lastMessage.toLowerCase().includes(searchTerm)) {
+                    listHtml += `
+                        <li class="conversation-item" data-conversation-id="${convId}">
+                            <div class="user-avatar">
+                                <img src="${conv.avatar}" alt="${conv.name} Avatar">
+                                <span class="status-indicator ${conv.status === 'offline' ? 'offline' : ''}"></span>
+                            </div>
+                            <div class="conversation-info">
+                                <div class="conversation-name">${conv.name}</div>
+                                <div class="last-message">${conv.lastMessage}</div>
+                            </div>
+                        </li>
+                    `;
+                }
+            }
+        }
+        $conversationList.html(listHtml);
+
+        // Après avoir généré la liste, assurez-vous que la conversation active reste stylisée
+        if (activeConversationId) {
+            $(`[data-conversation-id="${activeConversationId}"]`).addClass('active');
+        }
+    }
+
+    
+    // Définissez cette variable quelque part globalement ou passez-la en argument
+    const currentUserId = 'yourCurrentUserId'; // ID de l'utilisateur qui est connecté (vous)
+
+    
+
+    // ===================================
+    // Fonctions de mise à jour
+    // ===================================
+
+    // Fonction pour mettre à jour les messages de la conversation
+    function updateChatMessages(messages, correspondentAvatarUrl) {
+        let messagesHtml = '';
+
+        if (!messages || messages.length === 0) {
+            messagesHtml = '<li style="padding: 1rem; text-align: center; color: var(--messenger-text-gray);">Aucun message dans cette conversation.</li>';
+        } else {
+            messages.forEach(message => {
+                const isMyMessage = message.type === 'me';
+                let messageBubbleContent = '';
+
+                // Construire le contenu de la bulle en fonction du contentType
+                if (message.contentType === 'image') {
+                    // Utilisez une classe CSS pour styliser la miniature
+                    messageBubbleContent = `<img src="${message.content}" class="message-thumbnail" alt="Image envoyée">`;
+                } else if (message.contentType === 'file') {
+                    // Exemple pour un fichier (non implémenté ici, juste pour montrer l'idée)
+                    messageBubbleContent = `<div class="file-preview"><i class="fa-solid fa-file"></i><span>${message.content}</span></div>`;
+                }
+                else {
+                    messageBubbleContent = message.content;
+                }
+
+                // La structure reste la même, seule le contenu de la bulle change
+                let messageItemHtml = `
+                    <li class="message-item ${isMyMessage ? 'from-me' : 'from-other'}">
+                        ${!isMyMessage ? `<div class="message-avatar"><img src="${correspondentAvatarUrl}" alt="Avatar"></div>` : ''}
+                        <div class="message-content">
+                            <div class="message-bubble">${messageBubbleContent}</div>
+                            <span class="message-time">${message.time}</span>
+                        </div>
+                    </li>
+                `;
+                messagesHtml += messageItemHtml;
+            });
+        }
+
+        const $messageList = $("#messageList"); 
+        $messageList.html(messagesHtml);
+
+        // Défiler vers le bas (avec un petit délai pour le rendu)
+        setTimeout(() => {
+            if ($messageList.length) {
+                $messageList.scrollTop($messageList[0].scrollHeight);
+            }
+        }, 50); 
+    }
+
+
+    
+
+    // Fonction pour mettre à jour les informations du profil
+    function updateProfileInfo(profileData) {
+        if (profileData) {
+            $userProfileAvatar.attr("src", profileData.avatar);
+            $userProfileName.text(profileData.name);
+            $userProfileStatus.text(profileData.status === 'online' ? 'Actif maintenant' : 'Hors ligne');
+            $userProfileAbout.html(profileData.about || 'Non spécifié.'); // Utiliser .html() pour du HTML (ex: <br>)
+            $userProfileContact.html(profileData.contact || 'Non spécifié.');
+            // Vous pouvez ajouter d'autres éléments ici
+            // Ex: $("#userProfileSharedMedia").text(profileData.sharedMedia || 'Pas de médias partagés.');
+        } else {
+            // Optionnel: Réinitialiser le profil si aucune donnée n'est trouvée
+            $userProfileAvatar.attr("src", "https://via.placeholder.com/150/CCCCCC/FFFFFF?text=?");
+            $userProfileName.text("Profil Inconnu");
+            $userProfileStatus.text("");
+            $userProfileAbout.text("Aucune information de profil disponible.");
+            $userProfileContact.text("Aucune coordonnée.");
+        }
+    }
+
+
+    // Fonction pour ajouter un message à la conversation active
+    function addMessageToChat(type, content, contentType = 'text') { // Ajout de 'contentType'
+    const now = new Date();
+    const time = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const currentConversation = conversationsData[activeConversationId];
+
+    if (currentConversation) {
+        // Stocker un objet message plus détaillé pour la persistance
+        currentConversation.messages.push({
+            type: type, // 'me' ou 'other'
+            contentType: contentType, // 'text', 'image', 'file', 'location' etc.
+            content: content, // Le texte OU la Data URL de l'image OU une URL de fichier
+            time: time
+        });
+
+        const correspondentAvatarUrl = currentConversation.avatar;
+        updateChatMessages(currentConversation.messages, correspondentAvatarUrl); 
+        
+        // Mettre à jour les informations de la conversation pour la liste latérale
+        currentConversation.lastMessage = (contentType === 'image') ? "Image" : content; // Afficher "Image" comme dernier message
+        if (contentType === 'file') currentConversation.lastMessage = "Fichier"; // Si vous gérez d'autres types
+        if (contentType === 'location') currentConversation.lastMessage = "Localisation"; 
+
+        currentConversation.lastActivityTimestamp = now.getTime();
+        
+        generateConversationList();
+        $(`[data-conversation-id="${activeConversationId}"]`).addClass('active');
+        saveConversationsToLocalStorage();
+    } else {
+        console.error("ERREUR: activeConversationId est null ou la conversation n'existe pas:", activeConversationId);
+    }
+}
+
+
+    // Gérer l'envoi de messages dans les conversations normales
+    // Fonction principale pour envoyer un message (texte ou image)
+    function sendMessage() {
+        console.log("sendMessage appelée.");
+
+        if (currentImageFile) {
+            // Si une image est en prévisualisation, l'envoyer
+            console.log("Envoi d'image en cours...");
+            const reader = new FileReader();
+
+            reader.onload = function(e) {
+                const imageUrl = e.target.result;
+                // Ici, vous pourriez appeler une API pour envoyer le fichier réel
+                // en utilisant 'currentImageFile' avant d'ajouter le message au chat.
+                // Exemple: uploadImageToServer(currentImageFile).then(response => { addMessageToChat(...) });
+
+                addMessageToChat('me', imageUrl, 'image'); // Ajouter l'image au chat
+
+                // Réinitialiser l'interface après l'envoi de l'image
+                $imagePreviewContainer.css('display', 'none');
+                $normalChatInput.css('display', 'flex');
+                $imageUploadInput.val(''); // Efface le fichier de l'input
+                currentImageFile = null; // Réinitialise le fichier stocké
+            };
+            reader.readAsDataURL(currentImageFile);
+
+        } else {
+            // Si pas d'image en prévisualisation, envoyer un message texte
+            const messageText = $normalMessageInput.val().trim();
+
+            if (messageText) {
+                console.log("Message texte non vide:", messageText);
+                addMessageToChat('me', messageText, 'text'); // Ajouter le texte au chat
+                $normalMessageInput.val(''); // Efface l'input texte
+                // Ici, vous pourriez appeler une API pour envoyer le message texte
+            } else {
+                console.warn("Tentative d'envoi d'un message vide (ni texte, ni image).");
+            }
+        }
+    }
+
+
+
+
+
+
+
+
+
+
+// ===================================
+    // NOUVEAU: Fonctions pour gérer l'affichage/masquage des panneaux sur mobile (si manquantes)
+    // ===================================
+
+function showConversations() {
+    if ($(window).width() <= 768) { // Uniquement sur mobile
+        // 1. Assurer que la sidebar des conversations est visible et poussée
+        $conversationSidebar.css('display', 'flex'); // Assure la visibilité immédiate pour l'animation
+        setTimeout(() => { // Petit délai pour que le display:flex soit appliqué avant l'animation
+            $conversationSidebar.addClass('conversations-show');
+        }, 10);
+
+        // 2. Cacher le chat après une courte animation pour une transition douce
+        $chat.removeClass('conversations-pushed'); // Assurez-vous que le chat n'est pas poussé au préalable
+        $chat.addClass('conversations-hidden'); // NOUVELLE CLASSE POUR LE CHAT CACHÉ
+        setTimeout(() => {
+            $chat.css('display', 'none'); // Masque le chat après l'animation de translation
+        }, 300); // 300ms correspond à la durée de la transition CSS
+
+        // 3. Assurer que le profil est fermé si la liste de conversations s'ouvre
+        if ($profile.hasClass('user-profile--show')) {
+            $profile.removeClass('user-profile--show');
+            setTimeout(() => { $profile.css('display', 'none'); }, 300);
+        }
+    }
+}
+
+function hideConversations() {
+    if ($(window).width() <= 768) { // Uniquement sur mobile
+        // 1. Cacher la sidebar des conversations
+        $conversationSidebar.removeClass('conversations-show');
+        setTimeout(() => {
+            $conversationSidebar.css('display', 'none'); // Masque la sidebar après l'animation
+        }, 300); // 300ms correspond à la durée de la transition CSS
+
+        // 2. Afficher le chat
+        $chat.css('display', 'flex'); // Assure la visibilité immédiate pour l'animation
+        setTimeout(() => {
+             $chat.removeClass('conversations-hidden'); // Supprime la classe de masquage
+             $chat.removeClass('conversations-pushed'); // Assurez-vous qu'il n'est pas poussé
+        }, 10);
+    }
+}
+
+function showChat() {
+    if ($(window).width() <= 768) { // Uniquement sur mobile
+        hideConversations(); // Cache la liste des conversations via sa propre fonction
+
+        // Assurez que le chat est visible et le profil est caché
+        $chat.css('display', 'flex'); // Rend le chat visible
+        $chat.removeClass('conversations-hidden'); // Retire la classe de masquage
+
+        if ($profile.hasClass('user-profile--show')) {
+            $profile.removeClass('user-profile--show');
+            setTimeout(() => { $profile.css('display', 'none'); }, 300);
+        }
+    }
+}
+
+
+function showProfile() {
+    if ($(window).width() <= 768) { // Uniquement sur mobile
+        $profile.css('display', 'flex'); // Assure la visibilité pour l'animation
+        setTimeout(() => {
+            $profile.addClass("user-profile--show");
+            
+        }, 10);
+        
+        // Assurez-vous que la conversation et la sidebar sont cachées
+        hideConversations(); // Cache la liste des conversations
+        $chat.css('display', 'none'); // Masque explicitement le chat
+        $chat.addClass('conversations-hidden'); // Ajoute la classe de masquage
+
+        // if (activeConversationId) {
+        //     const conversation = conversationsData[activeConversationId];
+        //     if (conversation) {
+        //         $('#profileUserAvatar').attr('src', conversation.avatar);
+        //         $('#profileUserName').text(conversation.name);
+
+        //         const messagesKey = 'messages_' + activeConversationId;
+        //         const storedMessages = JSON.parse(localStorage.getItem(messagesKey)) || [];
+
+        //         const recentMessages = storedMessages.slice(-10); // Les 10 derniers messages pour l'aperçu
+        //         const currentUserId = 'yourCurrentUserId'; // ID de l'utilisateur connecté
+
+        //         renderMessagesToList($profileMessageList, recentMessages, currentUserId);
+        //     }
+        // } else {
+        //     $profileMessageList.empty();
+        //     $('#profileUserName').text('Aucune conversation active');
+        //     $('#profileUserAvatar').attr('src', 'path/to/default-avatar.jpg');
+        // }
+    }
+}
+
+
+    // Fonction pour cacher le profil (appelée par le bouton de fermeture ou showChat/showConversations)
+    function hideProfile() {
+        if ($(window).width() <= 768) {
+            $profile.removeClass('user-profile--show');
+            setTimeout(() => { $profile.css('display', 'none'); }, 300);
+            
+            // Lorsque le profil se ferme, réafficher le chat.
+            // C'est ici qu'on s'assure de ne PAS recharger les messages.
+            // Le contenu HTML de $messageList est censé être resté intact.
+            $chat.css('display', 'flex');
+            $chat.removeClass('conversations-hidden');
+        }
+    }
+
+
+    // Utilise le nouveau sélecteur pour le bouton de retour
+    $chatBackButton.click(function () {
+        // Cette logique est déjà présente et correcte pour mobile
+        if ($(window).width() <= 768) {
+            showConversations(); // Appelle la fonction pour afficher la liste des conversations
+        }
+        // Sur desktop, ce bouton est caché par CSS, donc son clic n'a pas d'effet.
+    });
+
+
+
+
+
+
+    // ===================================
+    // NOUVELLE FONCTION : Exporter toutes les conversations vers un fichier JSON
+    // ===================================
+    function exportConversationsToFile() {
+        const jsonString = JSON.stringify(conversationsData, null, 2); // Formatage lisible
+
+        const blob = new Blob([jsonString], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        // Utilisez le nom de fichier souhaité
+        a.download = "all_conversations.json";
+
+        document.body.appendChild(a);
+        a.click();
+
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+
+        console.log("Toutes les conversations exportées vers all_conversations.json");
+        alert("Toutes vos conversations ont été exportées dans 'all_conversations.json' !");
+    }
+
+    // ===================================
+    // Événements pour le bouton d'exportation
+    // ===================================
+    $exportConversationsBtn.on('click', exportConversationsToFile);
+
+    // ===================================
+    // NOUVEAU: Événement de recherche dynamique
+    // ===================================
+
+    // Écoute l'événement 'keyup' sur l'input de recherche
+    $conversationSearchInput.on('keyup', function() {
+        console.log("Recherche lancée. Terme:", $(this).val());
+        generateConversationList(); // Re-génère la liste avec le filtre appliqué
+    });
+
+
+    // ===================================
+    // Événements pour la conversation normale
+    // ===================================
+
+    // Écouteur de clic pour le bouton d'envoi
+    $sendMessageBtn.on('click', function() {
+        console.log("Clic sur le bouton d'envoi détecté.");
+        sendMessage();
+    });
+
+    // Écouteur de la touche "Entrée" pour l'input de message normal
+    $normalMessageInput.on('keypress', function(e) {
+        console.log("Touche pressée dans l'input normal. Code:", e.which);
+        if (e.which == 13) {
+            console.log("Touche Entrée détectée. Appel de sendMessage().");
+            e.preventDefault(); // Empêche le comportement par défaut de la touche Entrée (par ex. soumission de formulaire)
+            sendMessage();
+        }
+    });
+
+    // Ouvre/ferme le profil (bouton détails dans le chat)
+    $(".profile-details-button").click(function () {
+        // Vérifie si le profil est actuellement affiché ou caché
+        // On se base sur le style 'display' actuel
+        if ($profile.css('display') === 'flex') {
+            // Le profil est actuellement affiché, on le masque
+            // D'abord, on retire la classe pour la transition de masquage sur mobile
+            $profile.removeClass("user-profile--show");
+
+            // Si c'est un grand écran, le cacher complètement via display: none
+            // Sinon, sur mobile, la transition et le display: none sont gérés par la media query
+            if ($(window).width() > 768) {
+                // Ajouter une transition pour la disparition (si non gérée par transform)
+                // Ou simplement cacher après un court délai pour que l'utilisateur voit l'effet
+                setTimeout(() => {
+                    $profile.css('display', 'none');
+                }, 300); // Correspond à la durée de la transition si elle était là
+            }
+        } else {
+            // Le profil est actuellement masqué, on l'affiche
+            const activeConversation = conversationsData[activeConversationId];
+            updateProfileInfo(activeConversation);
+
+            $profile.css('display', 'flex'); // Rend l'élément visible
+            // Ajoute la classe pour la transition d'apparition sur mobile
+            // Pour les grands écrans, setting display: flex est suffisant car il n'y a pas de transform initial
+            setTimeout(() => {
+                $profile.addClass("user-profile--show");
+            }, 10); // Petit délai pour laisser le display: flex prendre effet avant la transition si elle s'applique
+        }
+    });
+
+    // Ferme le profil (bouton de fermeture X)
+    // Ce bouton est principalement pour le mobile, mais peut aussi être utilisé sur desktop
+    $(".profile-close-button").click(function () {
+        $profile.removeClass("user-profile--show");
+        // Masque le profil après la transition
+        setTimeout(() => {
+            $profile.css('display', 'none');
+        }, 300); // Durée de la transition CSS
+    });
+
+
+
+    // ===================================
+    // Logique de l'IA Gemini
+    // ===================================
+    $generateBtn.on('click', async () => {
+        const prompt = $promptInput.val().trim();
+
+        if (!prompt) {
+            // Afficher le message d'erreur directement dans la zone de chat
+            addMessageToChat('other', '<span style="color: red;">Veuillez entrer un prompt.</span>');
+            return;
+        }
+
+        // Ajouter le message de l'utilisateur au chat
+        addMessageToChat('me', prompt);
+        $promptInput.val(''); // Effacer l'input
+
+        // Ajouter un message de chargement de l'IA
+        addMessageToChat('other', '<span class="loading-dots"></span>'); // Utilisez une classe CSS pour les points de chargement
+        $generateBtn.prop('disabled', true); // Désactiver le bouton pendant le chargement
+
+        try {
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=AIzaSyBUCZaOUrFbuAfL7I6F025KDHwFS5HMp-Y`;
+            
+            const response = await fetch(
+                apiUrl,
+                {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: prompt }] }],
+                    }),
+                }
+            );
+
+            // Supprimer le message de chargement avant d'ajouter la réponse
+            const $lastLoadingMessage = $messageList.find('li:last-child .loading-dots').closest('li');
+            if ($lastLoadingMessage.length) {
+                $lastLoadingMessage.remove();
+            }
+
+            if (!response.ok) {
+                const errorDetails = await response.json();
+                console.error('Erreur de l\'API Gemini:', errorDetails);
+                addMessageToChat('other', `<span style="color: red;">Erreur de l'API Gemini: ${errorDetails.error?.message || 'Erreur inconnue'}. Vérifiez la console.</span>`);
+                throw new Error(`Erreur HTTP: ${response.status}`);
+            }
+
+            const data = await response.json();
+            
+            const generatedText = data.candidates && data.candidates[0] && 
+                                  data.candidates[0].content && data.candidates[0].content.parts &&
+                                  data.candidates[0].content.parts[0] && data.candidates[0].content.parts[0].text;
+
+            if (generatedText) {
+                addMessageToChat('other', generatedText); // Ajouter la réponse de l'IA
+            } else {
+                addMessageToChat('other', '<span style="color: orange;">Aucune réponse textuelle n\'a été générée par l\'IA. (Contenu bloqué ou réponse vide ?).</span>');
+            }
+
+        } catch (error) {
+            console.error('Erreur lors de l\'appel API:', error);
+            // Si le message de chargement est toujours là, supprimez-le avant d'ajouter l'erreur
+            const $lastLoadingMessage = $messageList.find('li:last-child .loading-dots').closest('li');
+            if ($lastLoadingMessage.length) {
+                $lastLoadingMessage.remove();
+            }
+            addMessageToChat('other', `<span style="color: red;">Une erreur est survenue: ${error.message}. Vérifiez votre clé API, l'accès au modèle, et la console du navigateur pour des erreurs CORS.</span>`);
+        } finally {
+            $generateBtn.prop('disabled', false); // Réactiver le bouton
+            $messageArea.scrollTop($messageArea[0].scrollHeight); // S'assurer de défiler jusqu'en bas
+        }
+    });
+
+    // Écouter la touche "Entrée" dans l'input de l'IA
+    $promptInput.on('keypress', function(e) {
+        if (e.which == 13 && !$generateBtn.prop('disabled')) { // 13 est le code pour la touche Entrée
+            $generateBtn.click();
+        }
+    });
+
+
+
+   // ===================================
+    // Événements (Mise à jour pour gérer l'IA)
+    // ===================================
+
+    $conversationList.on('click', '.conversation-item', function () {
+        $(".conversation-item").removeClass("active");
+        $(this).addClass("active");
+
+        const conversationId = $(this).data("conversation-id");
+        activeConversationId = conversationId; // Assurez-vous que cette ligne est bien présente et s'exécute
+        console.log("Conversation sélectionnée:", activeConversationId); // Ajout d'un log ici
+        const selectedConversation = conversationsData[conversationId];
+
+        if (selectedConversation) {
+            activeConversationId = conversationId;
+            // NOUVEAU: Sauvegarde l'ID de la conversation qui vient d'être activée dans localStorage.
+            // Cela permettra de la recharger lors de la prochaine visite.
+            localStorage.setItem(LOCAL_STORAGE_ACTIVE_CONV_KEY, activeConversationId);
+
+            $chatHeaderUserName.text(selectedConversation.name);
+            $chatHeaderUserAvatar.attr('src', selectedConversation.avatar);
+
+            updateChatMessages(selectedConversation.messages, selectedConversation.avatar);
+            updateProfileInfo(selectedConversation);
+
+            // Gérer l'affichage de la zone de saisie en fonction du type de conversation
+            if (selectedConversation.isAI) {
+                $normalChatInput.hide();
+                $aiChatInput.show();
+                $promptInput.focus(); // Met le focus sur l'input de l'IA
+            } else {
+                $normalChatInput.show();
+                $aiChatInput.hide();
+                // Optionnel : Mettre le focus sur l'input de chat normal ici
+                $normalMessageInput.focus();
+                
+            }
+
+            // Sur mobile, après la sélection, cacher la liste des conversations et montrer le chat
+            showChat(); // Appel à la fonction showChat définie ci-dessus
+        }
+        else {
+            console.error("Conversation sélectionnée non trouvée:", conversationId);
+        }
+
+        $chat.css('display', 'flex');
+        setTimeout(() => {
+            $chat.addClass("chat--show");
+        }, 10);
+    });
+
+    
+    // Initialisation : afficher la première conversation au chargement de la page
+    const firstConversationItem = $conversationList.find('.conversation-item:first');
+    if (firstConversationItem.length) {
+        firstConversationItem.click(); // Simule un clic sur la première conversation
+    } else {
+        console.warn("Aucun élément de conversation trouvé pour l'initialisation.");
+    }
+
+    // Initialisation de la page au chargement
+    // La liste des conversations est générée.
+    // generateConversationList();
+
+    // NOUVEAU: Après avoir généré la liste, on essaie de sélectionner la conversation qui était active
+    // lors de la dernière visite (chargée au début du script).
+    if (activeConversationId && conversationsData[activeConversationId]) {
+        // NOUVEAU: Si un ID de conversation active valide est trouvé, on simule un clic sur l'élément
+        // HTML correspondant. Cela déclenchera la logique de mise à jour de l'interface pour cette conversation.
+        $(`[data-conversation-id="${activeConversationId}"]`).click();
+    } else {
+        // NOUVEAU: Si aucune conversation active n'a été trouvée dans localStorage ou si l'ID était invalide,
+        // on sélectionne la toute première conversation disponible dans la liste.
+        const firstConversationItem = $conversationList.find('.conversation-item:first');
+        if (firstConversationItem.length) {
+            firstConversationItem.click();
+        } else {
+            console.warn("Aucune conversation trouvée pour l'initialisation.");
+        }
+    }
+
+
+
+
+
+    
+
+
+// Clic sur le bouton de retour du chat (sur mobile)
+    $(".chat-close-button").click(function () {
+        if ($(window).width() <= 768) {
+            showConversations(); // Appel à la fonction showConversations définie ci-dessus
+        }
+    });
+
+    // Ouvre le profil (bouton détails dans le chat)
+    $(".profile-details-button").click(function () {
+        // Utilise la conversation active pour charger les infos du profil
+        const activeConversation = conversationsData[activeConversationId];
+        updateProfileInfo(activeConversation); // S'assure que le profil est à jour
+
+        $profile.css('display', 'flex');
+        setTimeout(() => {
+            $profile.addClass("user-profile--show");
+        }, 10);
+    });
+
+    // Ferme le profil
+    $(".profile-close-button").click(function () {
+        $profile.removeClass("user-profile--show");
+        setTimeout(() => {
+            $profile.css('display', 'none');
+        }, 300);
+    });
+
+
+    // Événements de Swipe pour Mobile (attachés au body pour une meilleure couverture)
+    $('body').on('touchstart', function(e) {
+        if ($(window).width() <= 768) {
+            // Empêche le défilement pendant le swipe horizontal
+            if (e.originalEvent.touches.length === 1) { // Seulement pour un doigt
+                 // On ne l'empêche que si on détecte un swipe horizontal
+            }
+            startX = e.originalEvent.touches[0].clientX;
+            // console.log("Touch start:", startX);
+        }
+    });
+
+    $('body').on('touchmove', function(e) {
+        if ($(window).width() <= 768) {
+            endX = e.originalEvent.touches[0].clientX;
+            const diffX = endX - startX;
+            // Si le swipe est majoritairement horizontal, empêche le défilement vertical
+            if (Math.abs(diffX) > Math.abs(e.originalEvent.touches[0].clientY - e.originalEvent.changedTouches[0].clientY) && Math.abs(diffX) > 10) {
+                 e.preventDefault(); // Empêche le défilement par défaut du navigateur
+            }
+        }
+    });
+
+    $('body').on('touchend', function(e) {
+        if ($(window).width() <= 768) {
+            const diffX = endX - startX;
+
+            // Swipe vers la DROITE (pour afficher les conversations)
+            if (diffX > swipeThreshold) {
+                // Vérifier si le chat est visible et le profil est caché
+                if (!$profile.hasClass('user-profile--show') && $chat.css('transform') === 'none') {
+                    showConversations();
+                }else{
+                    $profile.removeClass("user-profile--show");
+                    setTimeout(() => {
+                        $profile.css('display', 'none');
+                    }, 300);
+                }
+            }
+            // Swipe vers la GAUCHE (pour afficher le chat ou le profil)
+            else if (diffX < -swipeThreshold) {
+                // Si la liste des conversations est visible, la cacher pour montrer le chat
+                if ($conversationSidebar.hasClass('conversations-show')) {
+                    hideConversations();
+                }
+                // Optionnel: Si le chat est visible, et qu'il y a un profil, afficher le profil
+                // else if (!$profile.hasClass('user-profile--show') && activeConversationId && !conversationsData[activeConversationId].isAI) {
+                //    showProfile();
+                // }
+            }
+            // Réinitialiser les positions
+            startX = 0;
+            endX = 0;
+        }
+    });
+
+
+    
+
+    // Gestion de la Redimensionnement de la Fenêtre
+    $(window).resize(function() {
+        if ($(window).width() > 768) {
+            // Sur grand écran, assurez-vous que tous les panneaux sont visibles et non transformés
+            $conversationSidebar.css('transform', 'translateX(0)');
+            $conversationSidebar.removeClass('conversations-show');
+            $chat.css('transform', 'translateX(0)');
+            $chat.removeClass('conversations-pushed');
+            $chat.css('display', 'flex'); // Assure que le chat est visible
+            $profile.css('display', 'flex'); // Assure que le profil est visible
+            $profile.removeClass("user-profile--show"); // Nettoie la classe mobile
+        } else {
+            // Sur petit écran, s'assurer que l'état initial mobile est appliqué
+            // Si la sidebar des conversations est censée être cachée (non show)
+            if (!$conversationSidebar.hasClass('conversations-show')) {
+                 $conversationSidebar.css('transform', 'translateX(-100%)');
+            }
+            // Si le chat n'est pas "pushed" par la sidebar (c'est-à-dire, il est visible)
+            if (!$chat.hasClass('conversations-pushed')) {
+                $chat.css('transform', 'translateX(0)');
+            }
+            // Si le profil est censé être caché (non show)
+            if (!$profile.hasClass("user-profile--show")) {
+                $profile.css('display', 'none');
+            }
+        }
+    }).trigger('resize'); // Déclenche l'événement resize au chargement pour initialiser l'état
+
+    // Initialisation au chargement de la page (point de départ final)
+    // 1. Génère la liste des conversations (ce qui les charge depuis localStorage ou les données par défaut)
+    generateConversationList();
+
+if (activeConversationId && conversationsData[activeConversationId]) {
+    $(`[data-conversation-id="${activeConversationId}"]`).click();
+} else {
+    const firstConversationItem = $conversationList.find('.conversation-item:first');
+    if (firstConversationItem.length) {
+        firstConversationItem.click();
+    } else {
+        console.warn("Aucune conversation trouvée pour l'initialisation.");
+    }
+}
+    
+
+    // Basculer le mode sombre
+    $(".dark-mode-toggle").click(function () {
+        $("body").toggleClass("dark-mode");
+    });
+});
+    </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<script>
+    
+</script>
+</body>
+</html>
