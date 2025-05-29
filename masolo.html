@@ -1705,7 +1705,37 @@ body.dark-mode .fa-solid { /* Applique à toutes les icônes Font Awesome */
 // Simule une base de données de conversations et de messages
 const conversationsData = {};
 
+    // Dans votre script.js, quelque part où vous gérez les paramètres de l'interface
+    const darkModeToggle = document.getElementById('darkModeToggle'); // Supposons que vous ayez un bouton pour ça
+
 $(document).ready(function() {
+
+    // --- 1. Logique de chargement du thème au démarrage (à placer EN PREMIER dans document.ready) ---
+    const savedTheme = localStorage.getItem('theme');
+    console.log("Thème sauvegardé au démarrage :", savedTheme);
+
+    if (savedTheme === "dark") {
+        $("body").addClass("dark-mode"); // Applique la classe si le thème sombre est préféré
+        console.log("Mode sombre appliqué au démarrage.");
+    }
+
+    $(".dark-mode-toggle").click(function () {
+            $("body").toggleClass("dark-mode");
+
+            if ($("body").hasClass("dark-mode")) {
+                localStorage.setItem("theme", "dark");
+                console.log("Thème sauvegardé : dark");
+            } else {
+                localStorage.setItem("theme", "light");
+                console.log("Thème sauvegardé : light");
+            }
+        });
+
+
+
+
+
+
     const $chat = $(".chat-window");
     const $profile = $(".user-profile-sidebar");
 
@@ -1772,6 +1802,10 @@ $(document).ready(function() {
 
     const LOCAL_STORAGE_KEY = "messengerConversationsData";
 
+
+   
+
+    
 
     const $body = $('body');
 
@@ -1924,6 +1958,11 @@ $(document).ready(function() {
 
         let currentImageFile = null; // Pour stocker le fichier sélectionné temporairement
 
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'dark') {
+            document.body.classList.add('dark-mode');
+        }
+
         // Gérer l'affichage/masquage du menu d'attachement
         attachButton.addEventListener('click', () => {
             attachmentMenu.classList.toggle('active'); // Assurez-vous d'avoir un style CSS pour .attachment-menu.active
@@ -1964,6 +2003,7 @@ $(document).ready(function() {
                 normalChatInput.style.display = 'flex'; // Réaffiche l'input de chat normal
             }
         });
+        
 
         // Annuler l'upload de l'image
         cancelImageUpload.addEventListener('click', () => {
@@ -3157,23 +3197,35 @@ function showProfile() {
     // 1. Génère la liste des conversations (ce qui les charge depuis localStorage ou les données par défaut)
     generateConversationList();
 
-if (activeConversationId && conversationsData[activeConversationId]) {
-    $(`[data-conversation-id="${activeConversationId}"]`).click();
-} else {
-    const firstConversationItem = $conversationList.find('.conversation-item:first');
-    if (firstConversationItem.length) {
-        firstConversationItem.click();
+    if (activeConversationId && conversationsData[activeConversationId]) {
+        $(`[data-conversation-id="${activeConversationId}"]`).click();
     } else {
-        console.warn("Aucune conversation trouvée pour l'initialisation.");
+        const firstConversationItem = $conversationList.find('.conversation-item:first');
+        if (firstConversationItem.length) {
+            firstConversationItem.click();
+        } else {
+            console.warn("Aucune conversation trouvée pour l'initialisation.");
+        }
     }
-}
-    
+        
 
-    // Basculer le mode sombre
-    $(".dark-mode-toggle").click(function () {
-        $("body").toggleClass("dark-mode");
+        // Basculer le mode sombre
+        $(".dark-mode-toggle").click(function () {
+            // 1. Bascule la classe 'dark-mode' sur le body (change l'apparence visuelle)
+            $("body").toggleClass("dark-mode");
+
+            // 2. Vérifie si la classe 'dark-mode' est maintenant présente sur le body
+            if ($("body").hasClass("dark-mode")) {
+                // Si oui, sauvegarde 'dark' comme thème préféré dans localStorage
+                localStorage.setItem("theme", "dark");
+                console.log("Thème sauvegardé : dark"); // Message de débogage pour la console
+            } else {
+                // Sinon (la classe a été retirée), sauvegarde 'light'
+                localStorage.setItem("theme", "light");
+                console.log("Thème sauvegardé : light"); // Message de débogage pour la console
+            }
+        });
     });
-});
     </script>
 
 
