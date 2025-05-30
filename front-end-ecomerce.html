@@ -15,12 +15,12 @@
         }
 
         .messenger-container {
-            max-width: 960px;
-            margin: auto;
+            max-width: 100%; /* Prend toute la largeur disponible */
+            margin: 0; /* Supprime le centrage automatique */
             background-color: #fff;
             border-radius: 8px;
             box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-            min-height: calc(100vh - 80px); /* Ajuster la hauteur */
+            min-height: calc(100vh - 80px);
             display: flex;
             flex-direction: column;
         }
@@ -37,10 +37,72 @@
             font-size: 1.5rem;
         }
 
+        /* Nouveau style pour la zone de contenu principale (sidebar + contenu dynamique) */
+        .main-layout-area {
+            display: flex;
+            flex-grow: 1; /* Permet de prendre l'espace vertical disponible */
+            width: 100%; /* S'assure qu'il prend toute la largeur du parent */
+        }
+
+        .sidebar {
+            width: 220px; /* Largeur fixe pour la barre latérale */
+            background-color: #f8f9fa; /* Fond clair pour la barre latérale */
+            padding: 20px 15px;
+            border-right: 1px solid #eee;
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.05);
+            flex-shrink: 0; /* Empêche la barre latérale de rétrécir */
+            overflow-y: auto; /* Permet le défilement si le contenu est long */
+        }
+
+        .sidebar-header {
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #ddd;
+            color: #0084ff;
+        }
+
+        .sidebar-nav {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .sidebar-nav li {
+            margin-bottom: 10px;
+        }
+
+        .sidebar-nav a {
+            display: block;
+            padding: 8px 10px;
+            color: #333;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
+        }
+
+        .sidebar-nav a:hover {
+            background-color: #e0e0e0;
+            color: #0084ff;
+        }
+
+        .sidebar-nav a i {
+            margin-right: 10px;
+            color: #666; /* Couleur de l'icône */
+        }
+
+        .sidebar-nav a:hover i {
+            color: #0084ff; /* Couleur de l'icône au survol */
+        }
+
+        .sidebar-nav .separator {
+            border-top: 1px solid #eee;
+            margin: 15px 0;
+        }
+
         .messenger-body {
-            flex-grow: 1;
+            flex-grow: 1; /* Permet au contenu principal de prendre l'espace restant */
             padding: 20px;
-            overflow-y: auto; /* Permet le défilement du contenu */
+            overflow-y: auto;
         }
 
         /* Style des cartes produits */
@@ -50,7 +112,7 @@
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
             transition: transform 0.2s ease-in-out;
             margin-bottom: 20px;
-            overflow: hidden; /* Pour gérer le border-radius avec l'image */
+            overflow: hidden;
         }
 
         .product-card:hover {
@@ -59,11 +121,11 @@
 
         .product-card img {
             height: 200px;
-            object-fit: contain; /* Assure que l'image est bien contenue */
+            object-fit: contain;
             border-top-left-radius: 10px;
             border-top-right-radius: 10px;
-            padding: 10px; /* Espace autour de l'image */
-            background-color: #f8f9fa; /* Fond clair pour les images */
+            padding: 10px;
+            background-color: #f8f9fa;
         }
 
         .product-card .card-body {
@@ -74,24 +136,24 @@
             font-size: 1.1rem;
             font-weight: 600;
             color: #333;
-            min-height: 50px; /* Pour une hauteur uniforme des titres */
+            min-height: 50px;
         }
 
         .product-card .card-text {
             font-size: 0.9rem;
             color: #666;
-            height: 60px; /* Hauteur fixe pour la description */
+            height: 60px;
             overflow: hidden;
             text-overflow: ellipsis;
             display: -webkit-box;
-            -webkit-line-clamp: 3; /* Limite à 3 lignes */
+            -webkit-line-clamp: 3;
             -webkit-box-orient: vertical;
         }
 
         .product-card .product-price {
             font-size: 1.4rem;
             font-weight: bold;
-            color: #0084ff; /* Prix en bleu Messenger */
+            color: #0084ff;
         }
 
         .product-card .btn-add-to-cart {
@@ -202,25 +264,25 @@
         /* Style pour la barre de recherche */
         .search-bar-container {
             flex-grow: 1;
-            margin-left: 15px; /* Espace entre le brand et la barre de recherche */
-            margin-right: 15px; /* Espace entre la barre de recherche et le panier */
+            margin-left: 15px;
+            margin-right: 15px;
         }
 
         .search-bar-container .form-control {
-            border-radius: 20px; /* Bords arrondis */
-            padding-left: 1.5rem; /* Espace pour l'icône de loupe */
-            background-color: rgba(255, 255, 255, 0.2); /* Fond semi-transparent */
+            border-radius: 20px;
+            padding-left: 1.5rem;
+            background-color: rgba(255, 255, 255, 0.2);
             border: none;
             color: white;
         }
 
         .search-bar-container .form-control::placeholder {
-            color: rgba(255, 255, 255, 0.7); /* Couleur du placeholder */
+            color: rgba(255, 255, 255, 0.7);
         }
 
         .search-bar-container .form-control:focus {
-            background-color: white; /* Fond blanc au focus */
-            color: #333; /* Texte noir au focus */
+            background-color: white;
+            color: #333;
             box-shadow: none;
         }
 
@@ -239,25 +301,25 @@
         }
 
         .search-input-group .form-control:focus + .fa-search {
-            color: #0084ff; /* Couleur de l'icône au focus */
+            color: #0084ff;
         }
 
-        @media (max-width: 991.98px) { /* Pour les écrans plus petits que large (lg) */
+        @media (max-width: 991.98px) {
             .search-bar-container {
                 margin-left: 0;
                 margin-right: 0;
-                margin-top: 10px; /* Espace au-dessus sur mobile */
-                width: 100%; /* Pleine largeur sur mobile */
+                margin-top: 10px;
+                width: 100%;
             }
             .navbar-collapse {
-                padding-bottom: 10px; /* Espace sous la barre de recherche sur mobile */
+                padding-bottom: 10px;
             }
         }
 
-        /* Styles pour les nouvelles sections statiques */
+        /* Styles pour les sections statiques (maintenant conditionnelles) */
         .static-sections {
             padding: 20px;
-            background-color: #f0f2f5; /* Fond légèrement différent pour les sections statiques */
+            background-color: #f0f2f5;
             border-bottom-left-radius: 8px;
             border-bottom-right-radius: 8px;
         }
@@ -277,7 +339,7 @@
         }
 
         .whatsapp-section .btn-success {
-            background-color: #25D366; /* Vert WhatsApp */
+            background-color: #25D366;
             border-color: #25D366;
             font-size: 1.2rem;
             padding: 10px 25px;
@@ -297,7 +359,7 @@
         }
 
         .messenger-footer {
-            background-color: #333; /* Fond sombre pour le footer */
+            background-color: #333;
             color: rgba(255, 255, 255, 0.7);
             padding: 20px;
             border-bottom-left-radius: 8px;
@@ -306,20 +368,230 @@
         }
 
         .messenger-footer .fas {
-            color: #e74c3c; /* Cœur rouge */
+            color: #e74c3c;
         }
 
         /* Styles pour le carousel */
         .carousel-item img {
-            max-height: 300px; /* Hauteur maximale pour les images du carousel */
-            object-fit: cover; /* Recadre l'image pour couvrir l'espace */
-            width: 100%; /* Assure que l'image remplit la largeur */
+            max-height: 300px;
+            object-fit: cover;
+            width: 100%;
             border-radius: 8px;
         }
         .carousel-caption {
-            background-color: rgba(0, 0, 0, 0.5); /* Fond semi-transparent pour le texte */
+            background-color: rgba(0, 0, 0, 0.5);
             border-radius: 5px;
             padding: 10px;
+        }
+
+        /* Responsive adjustments for sidebar */
+        @media (max-width: 768px) {
+            .sidebar {
+                display: none; /* Cache la barre latérale sur les petits écrans */
+            }
+            .main-layout-area {
+                flex-direction: column; /* Empile le contenu principal verticalement sur les petits écrans */
+            }
+        }
+
+        /* Styles pour la section Contacts/Chat */
+        .contacts-layout {
+            display: flex;
+            width: 100%;
+            height: 100%;
+            min-height: 500px; /* Hauteur minimale pour le conteneur de chat */
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .contacts-list {
+            flex-basis: 30%; /* Largeur de la liste de contacts */
+            max-width: 300px;
+            background-color: #fff;
+            border-right: 1px solid #eee;
+            overflow-y: auto;
+            padding: 10px 0;
+        }
+
+        .contact-item {
+            display: flex;
+            align-items: center;
+            padding: 10px 15px;
+            cursor: pointer;
+            border-bottom: 1px solid #f0f2f5;
+            transition: background-color 0.2s ease-in-out;
+        }
+
+        .contact-item:hover {
+            background-color: #f0f2f5;
+        }
+
+        .contact-item.active {
+            background-color: #e0e0e0;
+        }
+
+        .contact-item img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-right: 10px;
+        }
+
+        .contact-info h6 {
+            margin-bottom: 0;
+            font-weight: 600;
+        }
+
+        .contact-info p {
+            font-size: 0.85em;
+            color: #666;
+            margin-bottom: 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .chat-window {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            background-color: #f0f2f5; /* Fond du chat */
+        }
+
+        .chat-header {
+            background-color: #0084ff;
+            color: white;
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        }
+
+        .chat-header img {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-right: 15px;
+        }
+
+        .chat-header h5 {
+            margin-bottom: 0;
+            font-weight: bold;
+        }
+
+        .chat-header .status-dot {
+            width: 10px;
+            height: 10px;
+            background-color: #25D366; /* Online */
+            border-radius: 50%;
+            margin-left: 8px;
+            display: inline-block;
+        }
+        .chat-header .status-dot.offline {
+            background-color: #ccc; /* Offline */
+        }
+
+        .chat-messages {
+            flex-grow: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .message-bubble {
+            max-width: 70%;
+            padding: 10px 15px;
+            border-radius: 18px;
+            margin-bottom: 10px;
+            position: relative;
+            word-wrap: break-word;
+        }
+
+        .message-bubble.me {
+            background-color: #0084ff; /* Bleu Messenger */
+            color: white;
+            align-self: flex-end;
+            border-bottom-right-radius: 2px;
+        }
+
+        .message-bubble.other {
+            background-color: #e4e6eb; /* Gris clair */
+            color: #333;
+            align-self: flex-start;
+            border-bottom-left-radius: 2px;
+        }
+
+        .message-bubble .message-time {
+            font-size: 0.75em;
+            color: rgba(255, 255, 255, 0.7);
+            text-align: right;
+            margin-top: 5px;
+        }
+        .message-bubble.other .message-time {
+            color: #666;
+        }
+
+        .chat-input-area {
+            padding: 15px;
+            background-color: #fff;
+            border-top: 1px solid #eee;
+            display: flex;
+            align-items: center;
+        }
+
+        .chat-input-area .form-control {
+            border-radius: 20px;
+            margin-right: 10px;
+            padding: 10px 15px;
+            border: 1px solid #ddd;
+        }
+
+        .chat-input-area .btn-primary {
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-shrink: 0;
+        }
+
+        /* Placeholder pour la fenêtre de chat vide */
+        .chat-placeholder {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+            color: #aaa;
+            text-align: center;
+        }
+        .chat-placeholder i {
+            font-size: 4rem;
+            margin-bottom: 20px;
+        }
+
+        /* Loading spinner for AI response */
+        .ai-loading-bubble {
+            background-color: #e4e6eb;
+            color: #333;
+            align-self: flex-start;
+            border-bottom-left-radius: 2px;
+            padding: 10px 15px;
+            margin-bottom: 10px;
+            max-width: 70%;
+            display: flex;
+            align-items: center;
+        }
+        .ai-loading-bubble .spinner-border {
+            width: 1.2rem;
+            height: 1.2rem;
+            margin-right: 10px;
+            color: #666;
         }
     </style>
 </head>
@@ -368,29 +640,28 @@
             </div>
         </nav>
 
-        <div class="messenger-body" id="appContent">
-            <div class="loading-spinner">
-                <div class="spinner-border text-primary" role="status">
-                    <span class="visually-hidden">Chargement...</span>
+        <div class="main-layout-area">
+            <aside class="sidebar d-none d-md-block"> <div class="sidebar-header">
+                    <h4>Menu</h4>
+                </div>
+                <ul class="sidebar-nav">
+                    <li><a href="#" id="sidebarCategoriesLink"><i class="fas fa-th-list"></i> Catégories</a></li>
+                    <li><a href="#" id="sidebarFavoritesLink"><i class="fas fa-star"></i> Favoris</a></li>
+                    <li class="separator"></li>
+                    <li><a href="#" id="sidebarGroupChatsLink"><i class="fas fa-comments"></i> Groupes (Conversations)</a></li>
+                    <li><a href="#" id="sidebarGroupManagementLink"><i class="fas fa-users-cog"></i> Gestion des groupes</a></li>
+                    <li><a href="#" id="sidebarContactsLink"><i class="fas fa-address-book"></i> Contacts</a></li>
+                    <li><a href="#" id="sidebarProfileLink"><i class="fas fa-user-circle"></i> Mon Profil</a></li>
+                </ul>
+            </aside>
+
+            <div class="messenger-body" id="appContent">
+                <div class="loading-spinner">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Chargement...</span>
+                    </div>
                 </div>
             </div>
-        </div>
-
-        <div class="static-sections p-4">
-            <section class="whatsapp-section text-center mb-5 p-4">
-                <h3><i class="fab fa-whatsapp"></i> Nous Contacter sur WhatsApp</h3>
-                <p class="lead">Besoin d'aide ou d'informations ? Contactez-nous directement pour une assistance rapide !</p>
-                <a href="https://wa.me/243812345678" target="_blank" class="btn btn-success btn-lg">
-                    <i class="fab fa-whatsapp"></i> Envoyer un message
-                </a>
-            </section>
-
-            <section class="promo-section text-center mb-5 p-4">
-                <h3><i class="fas fa-bullhorn"></i> Nos Offres Spéciales !</h3>
-                <p>Profitez de réductions incroyables sur une sélection d'articles. Ne manquez pas nos promotions exclusives !</p>
-                <img src="https://placehold.co/600x200/0084ff/ffffff?text=Publicite+JJ-Commerce" alt="Publicité JJ-Commerce" class="img-fluid rounded mb-3">
-                <p class="text-muted">Offre limitée ! Visitez notre boutique pour en savoir plus.</p>
-            </section>
         </div>
 
         <div class="modal fade" id="cartModal" tabindex="-1" aria-labelledby="cartModalLabel" aria-hidden="true">
@@ -435,11 +706,6 @@
 
         <div class="toast-container position-fixed bottom-0 end-0 p-3"></div>
 
-        <footer class="messenger-footer text-center">
-            <p>&copy; 2024 JJ-Commerce. Tous droits réservés.</p>
-            <p>Développé avec <i class="fas fa-heart text-danger"></i> pour vous.</p>
-        </footer>
-
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" xintegrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eGbF8s1hS2mt0n2u" crossorigin="anonymous"></script>
@@ -462,10 +728,222 @@
             const searchInput = document.getElementById('searchInput'); // Barre de recherche desktop
             const searchInputMobile = document.getElementById('searchInputMobile'); // Barre de recherche mobile
 
+            // Sidebar links
+            const sidebarCategoriesLink = document.getElementById('sidebarCategoriesLink');
+            const sidebarFavoritesLink = document.getElementById('sidebarFavoritesLink');
+            const sidebarGroupChatsLink = document.getElementById('sidebarGroupChatsLink'); // New ID for group chats
+            const sidebarGroupManagementLink = document.getElementById('sidebarGroupManagementLink'); // New ID for group management
+            const sidebarContactsLink = document.getElementById('sidebarContactsLink');
+            const sidebarProfileLink = document.getElementById('sidebarProfileLink');
+
             // Initialisation du panier depuis le localStorage ou un tableau vide
             let cart = JSON.parse(localStorage.getItem('cart')) || [];
             // Tableau pour stocker les produits chargés de l'API
-            let allProducts = []; // Renommé pour stocker tous les produits non filtrés
+            let allProducts = [];
+
+            // Données des contacts (fournies par l'utilisateur)
+            const contactsData = {
+                "SharonRoseIA": {
+                    name: "Sharon Rose IA",
+                    avatar: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcST5rQlP8qzJSM7RbZlWnDILzTJWTHptxZh2Q&s",
+                    thumbnail: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQvLBpSw3kWG6SFC5mQuTyMezAz0pBBXzXTvYg&s",
+                    status: "online",
+                    lastMessage: "Posez-moi une question !",
+                    isAI: true,
+                    messages: [
+                        { type: "other", contentType: "text", content: "Bonjour ! Sharon Rose IA. Comment puis-je vous aider aujourd'hui ?", time: "09:00 AM" }
+                    ]
+                },
+                "johnDoe": {
+                    name: "Galilée Doe",
+                    avatar: "https://randomuser.me/api/portraits/men/50.jpg",
+                    thumbnail: "https://randomuser.me/api/portraits/thumb/men/60.jpg",
+                    status: "online",
+                    lastMessage: "Hey, comment vas-tu ?",
+                    messages: [
+                        { type: "other", contentType: "text", content: "Hey, comment vas-tu ?", time: "11:30 AM" },
+                        { type: "me", contentType: "text", content: "Salut ! Je vais super bien, merci !", time: "11:35 AM" },
+                        { type: "other", contentType: "text", content: "Cool ! Quoi de neuf de ton côté ?", time: "11:40 AM" },
+                        { type: "me", contentType: "text", content: "Pas grand chose, juste du code !", time: "11:45 AM" }
+                    ]
+                },
+                "aliceSmith": {
+                    name: "Alice Team",
+                    avatar: "https://randomuser.me/api/portraits/women/60.jpg",
+                    thumbnail: "https://randomuser.me/api/portraits/thumb/women/30.jpg",
+                    status: "offline",
+                    lastMessage: "Can we meet tomorrow?",
+                    messages: [
+                        { type: "other", contentType: "text", content: "Salut l'équipe ! On a une réunion à 14h, c'est bon pour tout le monde ?", time: "09:00 AM" },
+                        { type: "me", contentType: "text", content: "Oui, c'est OK pour moi ! Je serai là.", time: "09:05 AM" },
+                        { type: "other", contentType: "text", content: "Pour moi aussi, pas de souci.", time: "09:07 AM" },
+                        { type: "me", contentType: "text", content: "Parfait, à tout à l'heure !", time: "09:10 AM" },
+                        { type: "other", contentType: "text", content: "N'oubliez pas les rapports !", time: "09:15 AM" }
+                    ]
+                },
+                "bobJohnson": {
+                    name: "Bob Johnson",
+                    avatar: "https://randomuser.me/api/portraits/men/66.jpg",
+                    thumbnail: "https://randomuser.me/api/portraits/thumb/men/66.jpg",
+                    status: "online",
+                    lastMessage: "Ça marche !",
+                    messages: [
+                        { type: "other", contentType: "text", content: "Salut ! C'est bon pour ce soir ?", time: "18:00 PM" },
+                        { type: "me", contentType: "text", content: "Oui, sans problème. J'arrive vers 19h.", time: "18:05 PM" },
+                        { type: "other", contentType: "text", content: "Super, à tout de suite !", time: "18:10 PM" }
+                    ]
+                },
+                "elodieManiema": {
+                    name: "Élodie Mbombo",
+                    avatar: "https://randomuser.me/api/portraits/women/62.jpg",
+                    thumbnail: "https://randomuser.me/api/portraits/thumb/women/62.jpg",
+                    status: "online",
+                    lastMessage: "Le projet avance bien, on a eu le feu vert pour la phase 2 !",
+                    messages: [
+                        { type: "other", contentType: "text", content: "Salut Élodie, des nouvelles sur le projet 'Lumière pour Tous' ? La réunion de ce matin était cruciale.", time: "09:10 AM" },
+                        { type: "me", contentType: "text", content: "Bonjour ! Oui, excellente nouvelle : on a eu le feu vert pour la phase 2 ! Les fonds sont débloqués.", time: "09:15 AM" },
+                        { type: "other", contentType: "text", content: "Fantastique ! Bravo à toute l'équipe. Quand peut-on coordonner pour le déploiement ?", time: "09:20 AM" },
+                        { type: "me", contentType: "text", content: "Dès que possible. Je t'envoie un doodle pour caler une rencontre cette semaine.", time: "09:25 AM" }
+                    ]
+                },
+                "patrickKivu": {
+                    name: "Patrick Kabongo",
+                    avatar: "https://randomuser.me/api/portraits/men/63.jpg",
+                    thumbnail: "https://randomuser.me/api/portraits/thumb/men/63.jpg",
+                    status: "offline",
+                    lastMessage: "Tu as vu les derniers défis TikTok sur la danse congolaise ?",
+                    messages: [
+                        { type: "me", contentType: "text", content: "Patrick, t'es là ? Je viens de voir une vidéo de dingue sur TikTok, le nouveau challenge de danse congolaise !", time: "14:00 PM" },
+                        { type: "other", contentType: "text", content: "Ah oui ? Envoyez-moi le lien, je dois voir ça ! Mon réseau est un peu lent aujourd'hui, haha.", time: "14:15 PM" },
+                        { type: "me", contentType: "text", content: "Je t'envoie ça. Faut absolument que tu essaies les pas, c'est contagieux !", time: "14:20 PM" },
+                        { type: "other", contentType: "text", content: "Mdr, je suis plus musique que danse, mais je vais regarder ! La prochaine fois on fait un live ensemble.", time: "14:30 PM" }
+                    ]
+                },
+                "graciaKin": {
+                    name: "Gracia Ngalula",
+                    avatar: "https://randomuser.me/api/portraits/women/69.jpg",
+                    thumbnail: "https://randomuser.me/api/portraits/thumb/women/69.jpg",
+                    status: "online",
+                    lastMessage: "La commande de pagnes est prête pour l'expédition.",
+                    messages: [
+                        { type: "other", contentType: "text", content: "Gracia, bonjour ! Je voulais savoir où en était ma commande de pagnes personnalisés.", time: "10:00 AM" },
+                        { type: "me", contentType: "text", content: "Bonjour ! Excellente nouvelle, elle est prête pour l'expédition. Je vous envoie le numéro de suivi dans la foulée.", time: "10:05 AM" },
+                        { type: "other", contentType: "text", content: "Parfait ! Merci beaucoup pour votre rapidité. Hâte de les recevoir !", time: "10:10 AM" },
+                        { type: "me", contentType: "text", content: "Avec plaisir ! N'hésitez pas si vous avez d'autres besoins. Merci de votre confiance.", time: "10:15 AM" }
+                    ]
+                },
+                "cedricLubum": {
+                    name: "Cédric Tshibangu",
+                    avatar: "https://randomuser.me/api/portraits/men/65.jpg",
+                    thumbnail: "https://randomuser.me/api/portraits/thumb/men/65.jpg",
+                    status: "online",
+                    lastMessage: "La séance de coaching a été très enrichissante.",
+                    messages: [
+                        { type: "me", contentType: "text", content: "Salut Cédric, merci pour la séance de coaching d'hier. C'était vraiment éclairant pour ma stratégie marketing.", time: "08:30 AM" },
+                        { type: "other", contentType: "text", content: "De rien ! Heureux d'avoir pu t'aider. Les retours sont positifs de ton côté ?", time: "08:35 AM" },
+                        { type: "me", contentType: "text", content: "Totalement. J'ai déjà commencé à implémenter tes conseils. Je te tiens au courant de l'évolution.", time: "08:40 AM" },
+                        { type: "other", contentType: "text", content: "Super ! Reste focalisé sur les objectifs que nous avons définis. À très bientôt !", time: "08:45 AM" }
+                    ]
+                },
+                "christelleKasai": {
+                    name: "Christelle Mpiana",
+                    avatar: "https://randomuser.me/api/portraits/women/99.jpg",
+                    thumbnail: "https://randomuser.me/api/portraits/thumb/women/99.jpg",
+                    status: "offline",
+                    lastMessage: "On se voit au marché central pour la livraison des vivres ?",
+                    messages: [
+                        { type: "me", contentType: "text", content: "Salut Christelle, tu es disponible demain matin ? On doit organiser la livraison des vivres pour le centre d'accueil.", time: "16:00 PM" },
+                        { type: "other", contentType: "text", content: "Oui, je suis libre ! On se donne rendez-vous au marché central à 9h ? On pourra charger directement là-bas.", time: "16:10 PM" },
+                        { type: "me", contentType: "text", content: "Parfait pour moi. Je serai là avec l'équipe de bénévoles. Merci pour ton aide habituelle !", time: "16:15 PM" },
+                        { type: "other", contentType: "text", content: "Pas de souci, c'est pour la bonne cause. À demain !", time: "16:20 PM" }
+                    ]
+                },
+                "dadiKongo": {
+                    name: "Dadi Mputu",
+                    avatar: "https://randomuser.me/api/portraits/men/65.jpg",
+                    thumbnail: "https://randomuser.me/api/portraits/thumb/men/65.jpg",
+                    status: "online",
+                    lastMessage: "Les résultats du match de l'AS V.Club sont tombés !",
+                    messages: [
+                        { type: "other", contentType: "text", content: "Alors Dadi, t'as vu le match de V.Club hier soir ? J'ai raté le début, j'étais coincé dans les embouteillages.", time: "07:30 AM" },
+                        { type: "me", contentType: "text", content: "Salut ! Oui, j'ai tout suivi. V.Club a cartonné, victoire écrasante ! Les fans sont en folie sur les réseaux.", time: "07:35 AM" },
+                        { type: "other", contentType: "text", content: "Ah super ! Je vais revoir les highlights. Tu penses qu'ils vont maintenir ce rythme pour la suite de la saison ?", time: "07:40 AM" },
+                        { type: "me", contentType: "text", content: "Clairement ! L'équipe est en forme. On devrait aller au stade ensemble pour le prochain match à domicile.", time: "07:45 AM" }
+                    ]
+                },
+                "giselleNord": {
+                    name: "Gisèle Bakonga",
+                    avatar: "https://randomuser.me/api/portraits/women/33.jpg",
+                    thumbnail: "https://randomuser.me/api/portraits/thumb/women/33.jpg",
+                    status: "online",
+                    lastMessage: "La présentation pour les investisseurs est prête.",
+                    messages: [
+                        { type: "me", contentType: "text", content: "Gisèle, la présentation pour les investisseurs est finalisée. Je l'ai revue une dernière fois.", time: "11:00 AM" },
+                        { type: "other", contentType: "text", content: "Parfait ! Envoie-la moi pour que je puisse la relire avant la réunion de demain. Merci pour ton efficacité.", time: "11:05 AM" },
+                        { type: "me", contentType: "text", content: "C'est envoyé. J'espère que ça les convaincra de notre potentiel.", time: "11:10 AM" },
+                        { type: "other", contentType: "text", content: "Avec la qualité de ton travail, je suis confiante. À demain !", time: "11:15 AM" }
+                    ]
+                },
+                "jeromeSud": {
+                    name: "Jérôme Lusamba",
+                    avatar: "https://randomuser.me/api/portraits/men/21.jpg",
+                    thumbnail: "https://randomuser.me/api/portraits/thumb/men/21.jpg",
+                    status: "offline",
+                    lastMessage: "La récolte de manioc a été exceptionnelle cette saison.",
+                    messages: [
+                        { type: "other", contentType: "text", content: "Salut Jérôme, j'espère que la récolte s'est bien passée dans ta ferme.", time: "15:30 PM" },
+                        { type: "me", contentType: "text", content: "Bonjour ! Oui, ça a été exceptionnel cette saison, particulièrement pour le manioc ! Dieu merci.", time: "15:35 PM" },
+                        { type: "other", contentType: "text", content: "Génial ! C'est une excellente nouvelle pour la communauté. Vous avez prévu une nouvelle distribution ?", time: "15:40 PM" },
+                        { type: "me", contentType: "text", content: "Absolument. Nous allons organiser une vente solidaire pour soutenir les familles dans le besoin. Je vous envoie les détails.", time: "15:45 AM" }
+                    ]
+                },
+                "nadineKatanga": {
+                    name: "Nadine Tshilombo",
+                    avatar: "https://randomuser.me/api/portraits/women/70.jpg",
+                    thumbnail: "https://randomuser.me/api/portraits/thumb/women/70.jpg",
+                    status: "online",
+                    lastMessage: "Le nouveau single de Fally Ipupa est une bombe !",
+                    messages: [
+                        { type: "me", contentType: "text", content: "Nadine, tu as écouté le nouveau single de Fally Ipupa ? C'est une tuerie !", time: "19:00 PM" },
+                        { type: "other", contentType: "text", content: "OMG oui ! Je l'ai en boucle depuis ce matin. Il a encore frappé très fort !", time: "19:05 PM" },
+                        { type: "me", contentType: "text", content: "Les paroles, le rythme... tout est parfait. C'est le genre de son qui te met direct de bonne humeur.", time: "19:10 PM" },
+                        { type: "other", contentType: "text", content: "Exactement ! J'ai déjà partagé avec tous mes contacts. Fally, c'est la légende !", time: "19:15 PM" }
+                    ]
+                },
+                "olivierOrientale": {
+                    name: "Olivier Kalala",
+                    avatar: "https://randomuser.me/api/portraits/men/82.jpg",
+                    thumbnail: "https://randomuser.me/api/portraits/thumb/men/82.jpg",
+                    status: "offline",
+                    lastMessage: "J'ai besoin de ton avis sur la nouvelle stratégie digitale.",
+                    messages: [
+                        { type: "other", contentType: "text", content: "Salut Olivier, quand aurais-tu un moment pour discuter de la nouvelle stratégie digitale ? J'ai quelques idées à te soumettre.", time: "13:00 PM" },
+                        { type: "me", contentType: "text", content: "Bonjour ! Je suis un peu pris ce matin, mais je suis libre cet après-midi après 15h. Envoie-moi un bref aperçu.", time: "13:10 PM" },
+                        { type: "other", contentType: "text", content: "Super ! Je t'envoie ça. Je pense que tes conseils seront précieux pour le déploiement.", time: "13:15 PM" },
+                        { type: "me", contentType: "text", content: "Pas de souci. On en parle plus en détail tout à l'heure.", time: "13:20 PM" }
+                    ]
+                }
+            };
+
+            let currentChatContactId = null; // Pour suivre le contact/groupe actuellement ouvert dans le chat
+            let currentChatType = null; // 'individual' or 'group'
+            let groupsData = JSON.parse(localStorage.getItem('groupsData')) || {}; // Données des groupes
+
+            // Add some initial fake group messages if groups exist
+            if (Object.keys(groupsData).length > 0) {
+                for (const groupId in groupsData) {
+                    if (groupsData.hasOwnProperty(groupId) && !groupsData[groupId].messages) {
+                        groupsData[groupId].messages = [
+                            { type: "other", senderId: groupsData[groupId].members[0] || "johnDoe", content: "Bonjour à tous ! J'espère que vous allez bien.", time: "10:00 AM" },
+                            { type: "me", senderId: "johnDoe", content: "Salut l'équipe ! Ça va super bien, merci.", time: "10:05 AM" },
+                            { type: "other", senderId: groupsData[groupId].members[1] || "aliceSmith", content: "Oui, tout va bien de mon côté aussi. Des nouveautés ?", time: "10:10 AM" },
+                            { type: "me", senderId: "johnDoe", content: "Pas grand chose, juste du code !", time: "10:15 AM" }
+                        ];
+                    }
+                }
+                saveGroups(); // Save updated groups with messages
+            }
+
 
             // --- Fonctions utilitaires ---
 
@@ -645,6 +1123,30 @@
                     </div>
                 `;
 
+                // Sections statiques et footer ajoutés ici (conditionnellement)
+                productsHtml += `
+                    <div class="static-sections p-4 mt-5">
+                        <section class="whatsapp-section text-center mb-5 p-4">
+                            <h3><i class="fab fa-whatsapp"></i> Nous Contacter sur WhatsApp</h3>
+                            <p class="lead">Besoin d'aide ou d'informations ? Contactez-nous directement pour une assistance rapide !</p>
+                            <a href="https://wa.me/243812345678" target="_blank" class="btn btn-success btn-lg">
+                                <i class="fab fa-whatsapp"></i> Envoyer un message
+                            </a>
+                        </section>
+
+                        <section class="promo-section text-center mb-5 p-4">
+                            <h3><i class="fas fa-bullhorn"></i> Nos Offres Spéciales !</h3>
+                            <p>Profitez de réductions incroyables sur une sélection d'articles. Ne manquez pas nos promotions exclusives !</p>
+                            <img src="https://placehold.co/600x200/0084ff/ffffff?text=Publicite+JJ-Commerce" alt="Publicité JJ-Commerce" class="img-fluid rounded mb-3">
+                            <p class="text-muted">Offre limitée ! Visitez notre boutique pour en savoir plus.</p>
+                        </section>
+                    </div>
+
+                    <footer class="messenger-footer text-center mt-auto">
+                        <p>&copy; 2024 JJ-Commerce. Tous droits réservés.</p>
+                        <p>Développé avec <i class="fas fa-heart text-danger"></i> pour vous.</p>
+                    </footer>
+                `;
 
                 appContent.innerHTML = productsHtml; // Injecte le HTML dans le DOM
                 attachAddToCartListeners(); // Attache les écouteurs d'événements aux boutons "Ajouter au panier"
@@ -1087,6 +1589,568 @@
                 console.log(`Produits filtrés pour la recherche "${query}":`, filtered.length, 'articles.');
             }
 
+            // --- Fonctions de la section Contacts/Chat ---
+
+            /**
+             * Affiche la liste des contacts.
+             */
+            function renderContacts() {
+                appContent.innerHTML = `
+                    <h2 class="mb-4 text-center"><i class="fas fa-address-book"></i> Vos Contacts</h2>
+                    <div class="contacts-layout">
+                        <div class="contacts-list" id="contactsList">
+                            </div>
+                        <div class="chat-window" id="chatWindow">
+                            <div class="chat-placeholder">
+                                <i class="fas fa-comments"></i>
+                                <h3>Sélectionnez un contact pour commencer à discuter</h3>
+                                <p>Vos conversations s'afficheront ici.</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                const contactsListElement = document.getElementById('contactsList');
+                Object.keys(contactsData).forEach(contactId => {
+                    const contact = contactsData[contactId];
+                    const contactItemHtml = `
+                        <div class="contact-item" data-contact-id="${contactId}">
+                            <img src="${contact.thumbnail}" alt="${contact.name}" onerror="this.onerror=null;this.src='https://placehold.co/40x40/cccccc/ffffff?text=${contact.name.charAt(0)}'">
+                            <div class="contact-info">
+                                <h6>${contact.name}</h6>
+                                <p>${contact.lastMessage}</p>
+                            </div>
+                        </div>
+                    `;
+                    contactsListElement.insertAdjacentHTML('beforeend', contactItemHtml);
+                });
+
+                // Attacher les écouteurs d'événements aux éléments de contact
+                document.querySelectorAll('.contact-item').forEach(item => {
+                    item.addEventListener('click', (event) => {
+                        const selectedContactId = event.currentTarget.dataset.contactId;
+                        renderChatWindow(selectedContactId);
+
+                        // Mettre à jour la classe active
+                        document.querySelectorAll('.contact-item').forEach(c => c.classList.remove('active'));
+                        event.currentTarget.classList.add('active');
+                    });
+                });
+                console.log('Liste des contacts affichée.');
+            }
+
+            /**
+             * Affiche la fenêtre de chat pour un contact donné.
+             * @param {string} contactId - L'ID du contact à afficher.
+             */
+            function renderChatWindow(contactId) {
+                currentChatContactId = contactId;
+                currentChatType = 'individual';
+                const contact = contactsData[contactId];
+                const chatWindowElement = document.getElementById('chatWindow');
+
+                if (!contact) {
+                    chatWindowElement.innerHTML = `<p class="text-danger text-center">Contact non trouvé.</p>`;
+                    return;
+                }
+
+                chatWindowElement.innerHTML = `
+                    <div class="chat-header">
+                        <img src="${contact.avatar}" alt="${contact.name}" onerror="this.onerror=null;this.src='https://placehold.co/50x50/0084ff/ffffff?text=${contact.name.charAt(0)}'">
+                        <h5>${contact.name}
+                            <span class="status-dot ${contact.status === 'offline' ? 'offline' : ''}"></span>
+                        </h5>
+                    </div>
+                    <div class="chat-messages" id="chatMessages">
+                        </div>
+                    <div class="chat-input-area">
+                        <input type="text" class="form-control" placeholder="Écrire un message..." id="messageInput">
+                        <button class="btn btn-primary" id="sendMessageBtn"><i class="fas fa-paper-plane"></i></button>
+                    </div>
+                `;
+
+                const chatMessagesElement = document.getElementById('chatMessages');
+                const messageInput = document.getElementById('messageInput');
+                const sendMessageBtn = document.getElementById('sendMessageBtn');
+
+                // Afficher les messages existants
+                contact.messages.forEach(msg => {
+                    displayMessage(msg.type, msg.content, msg.time, chatMessagesElement);
+                });
+                scrollToBottom(chatMessagesElement);
+
+                // Écouteur pour envoyer un message
+                sendMessageBtn.addEventListener('click', () => {
+                    sendMessage(messageInput.value, contactId, chatMessagesElement, messageInput);
+                });
+
+                messageInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        sendMessage(messageInput.value, contactId, chatMessagesElement, messageInput);
+                    }
+                });
+                console.log('Fenêtre de chat affichée pour le contact:', contact.name);
+            }
+
+            /**
+             * Affiche un message dans la fenêtre de chat.
+             * @param {string} type - 'me' ou 'other'.
+             * @param {string} content - Le contenu du message.
+             * @param {string} time - L'heure du message.
+             * @param {HTMLElement} chatMessagesElement - L'élément conteneur des messages.
+             * @param {string} [senderName=null] - Le nom de l'expéditeur (pour les chats de groupe).
+             */
+            function displayMessage(type, content, time, chatMessagesElement, senderName = null) {
+                const messageHtml = `
+                    <div class="message-bubble ${type}">
+                        ${senderName ? `<small class="fw-bold d-block mb-1">${senderName}</small>` : ''}
+                        ${content}
+                        <div class="message-time">${time}</div>
+                    </div>
+                `;
+                chatMessagesElement.insertAdjacentHTML('beforeend', messageHtml);
+            }
+
+            /**
+             * Envoie un message et le gère (ajout au modèle, affichage, et potentiellement appel IA).
+             * @param {string} messageText - Le texte du message à envoyer.
+             * @param {string} contactId - L'ID du contact.
+             * @param {HTMLElement} chatMessagesElement - L'élément conteneur des messages.
+             * @param {HTMLInputElement} messageInput - L'élément input du message.
+             */
+            async function sendMessage(messageText, contactId, chatMessagesElement, messageInput) {
+                if (messageText.trim() === '') return;
+
+                const contact = contactsData[contactId];
+                const currentTime = new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+
+                // Ajouter le message de l'utilisateur
+                const userMessage = { type: "me", contentType: "text", content: messageText.trim(), time: currentTime };
+                contact.messages.push(userMessage);
+                displayMessage(userMessage.type, userMessage.content, userMessage.time, chatMessagesElement);
+                contact.lastMessage = messageText.trim(); // Mettre à jour le dernier message
+
+                messageInput.value = ''; // Vider l'input
+                scrollToBottom(chatMessagesElement);
+
+                // Si c'est l'IA, appeler l'API Gemini
+                if (contact.isAI) {
+                    const loadingBubble = document.createElement('div');
+                    loadingBubble.classList.add('ai-loading-bubble');
+                    loadingBubble.innerHTML = `<div class="spinner-border" role="status"><span class="visually-hidden">Chargement...</span></div><span>L'IA est en train d'écrire...</span>`;
+                    chatMessagesElement.appendChild(loadingBubble);
+                    scrollToBottom(chatMessagesElement);
+
+                    try {
+                        const aiResponse = await sendMessageToGemini(messageText, contact.messages);
+                        loadingBubble.remove(); // Supprimer le spinner
+                        const aiMessage = { type: "other", contentType: "text", content: aiResponse, time: new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) };
+                        contact.messages.push(aiMessage);
+                        displayMessage(aiMessage.type, aiMessage.content, aiMessage.time, chatMessagesElement);
+                        contact.lastMessage = aiResponse; // Mettre à jour le dernier message
+                    } catch (error) {
+                        console.error('Erreur lors de la communication avec Gemini:', error);
+                        loadingBubble.remove();
+                        const errorMessage = { type: "other", contentType: "text", content: "Désolé, je n'ai pas pu générer de réponse. Veuillez réessayer.", time: new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) };
+                        contact.messages.push(errorMessage);
+                        displayMessage(errorMessage.type, errorMessage.content, errorMessage.time, chatMessagesElement);
+                        contact.lastMessage = "Erreur de communication avec l'IA.";
+                    }
+                    scrollToBottom(chatMessagesElement);
+                }
+            }
+
+            /**
+             * Fait défiler la fenêtre de chat jusqu'en bas.
+             * @param {HTMLElement} element - L'élément à faire défiler.
+             */
+            function scrollToBottom(element) {
+                element.scrollTop = element.scrollHeight;
+            }
+
+            /**
+             * Envoie un message à l'API Gemini et retourne la réponse.
+             * @param {string} prompt - Le message de l'utilisateur.
+             * @param {Array<Object>} chatHistory - L'historique complet de la conversation.
+             * @returns {Promise<string>} La réponse de l'IA.
+             */
+            async function sendMessageToGemini(prompt, chatHistory) {
+                let formattedChatHistory = chatHistory.map(msg => ({
+                    role: msg.type === "me" ? "user" : "model",
+                    parts: [{ text: msg.content }]
+                }));
+
+                // Assurez-vous que le dernier message est toujours de l'utilisateur pour le prompt actuel
+                formattedChatHistory.push({ role: "user", parts: [{ text: prompt }] });
+
+                const payload = { contents: formattedChatHistory };
+                const apiKey = ""; // Laisser vide, Canvas fournira la clé en runtime
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await response.json();
+                if (result.candidates && result.candidates.length > 0 &&
+                    result.candidates[0].content && result.candidates[0].content.parts &&
+                    result.candidates[0].content.parts.length > 0) {
+                    return result.candidates[0].content.parts[0].text;
+                } else {
+                    console.error("Structure de réponse inattendue de Gemini:", result);
+                    throw new Error("Réponse vide ou inattendue de l'IA.");
+                }
+            }
+
+            // --- Fonctions de la section Groupes ---
+            function saveGroups() {
+                localStorage.setItem('groupsData', JSON.stringify(groupsData));
+                console.log('Groupes sauvegardés:', groupsData);
+            }
+
+            /**
+             * Affiche la section de gestion des groupes (création, ajout/suppression de membres).
+             */
+            function renderGroupManagement() {
+                appContent.innerHTML = `
+                    <h2 class="mb-4 text-center"><i class="fas fa-users-cog"></i> Gestion des Groupes</h2>
+                    <div class="card p-4 shadow-sm mb-4">
+                        <h5>Créer un nouveau groupe</h5>
+                        <div class="input-group mb-3">
+                            <input type="text" class="form-control" placeholder="Nom du nouveau groupe" id="newGroupNameInput">
+                            <button class="btn btn-primary" id="createGroupBtn">Créer le groupe</button>
+                        </div>
+                    </div>
+
+                    <h3 class="mb-3">Vos Groupes</h3>
+                    <div id="groupsManagementList" class="list-group">
+                        </div>
+                `;
+
+                const newGroupNameInput = document.getElementById('newGroupNameInput');
+                const createGroupBtn = document.getElementById('createGroupBtn');
+                const groupsManagementListElement = document.getElementById('groupsManagementList');
+
+                createGroupBtn.addEventListener('click', () => {
+                    const groupName = newGroupNameInput.value.trim();
+                    if (groupName) {
+                        createGroup(groupName);
+                        newGroupNameInput.value = '';
+                        renderGroupManagement(); // Re-render pour afficher le nouveau groupe et ses options
+                        showToast('Groupe créé avec succès !', 'success');
+                    } else {
+                        showToast('Veuillez entrer un nom pour le groupe.', 'warning');
+                    }
+                });
+
+                displayGroupsForManagement(); // Appelle une fonction d'aide pour afficher les groupes
+
+                function displayGroupsForManagement() {
+                    groupsManagementListElement.innerHTML = '';
+                    if (Object.keys(groupsData).length === 0) {
+                        groupsManagementListElement.innerHTML = `<p class="text-center text-muted">Aucun groupe créé pour le moment. Créez-en un !</p>`;
+                        return;
+                    }
+
+                    Object.keys(groupsData).forEach(groupId => {
+                        const group = groupsData[groupId];
+                        // Récupérer les noms des membres ou afficher "ID Inconnu" si le contact n'existe pas
+                        const groupMembersNames = group.members.map(memberId => contactsData[memberId] ? contactsData[memberId].name : `ID Inconnu: ${memberId}`).join(', ');
+
+                        const groupHtml = `
+                            <div class="list-group-item mb-3 p-3 shadow-sm rounded">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h5 class="mb-1">${group.name}</h5>
+                                    <small class="text-muted">${group.members.length} membres</small>
+                                </div>
+                                <p class="mb-2">Membres: ${groupMembersNames || 'Aucun'}</p>
+                                <div class="d-flex align-items-center mb-2">
+                                    <select class="form-select form-select-sm me-2 add-member-select" data-group-id="${groupId}">
+                                        <option value="">Ajouter un membre...</option>
+                                        ${Object.keys(contactsData).map(contactId => {
+                                            const contact = contactsData[contactId];
+                                            return `<option value="${contactId}" ${group.members.includes(contactId) ? 'disabled' : ''}>${contact.name}</option>`;
+                                        }).join('')}
+                                    </select>
+                                    <button class="btn btn-sm btn-outline-primary add-member-btn" data-group-id="${groupId}">Ajouter</button>
+                                </div>
+                                <div class="d-flex flex-wrap gap-2 mt-2">
+                                    ${group.members.map(memberId => {
+                                        const member = contactsData[memberId];
+                                        return member ? `
+                                            <span class="badge bg-info text-dark d-flex align-items-center">
+                                                ${member.name}
+                                                <button type="button" class="btn-close btn-close-white ms-1 remove-member-btn" data-group-id="${groupId}" data-member-id="${memberId}" aria-label="Supprimer"></button>
+                                            </span>` : '';
+                                    }).join('')}
+                                </div>
+                                <button type="button" class="btn btn-danger btn-sm mt-3 delete-group-btn" data-group-id="${groupId}"><i class="fas fa-trash"></i> Supprimer le groupe</button>
+                            </div>
+                        `;
+                        groupsManagementListElement.insertAdjacentHTML('beforeend', groupHtml);
+                    });
+
+                    attachGroupManagementListeners();
+                }
+
+                function createGroup(name) {
+                    const newGroupId = 'group-' + Math.random().toString(36).substr(2, 9);
+                    groupsData[newGroupId] = {
+                        id: newGroupId,
+                        name: name,
+                        members: [],
+                        messages: [] // Initialize messages array for group chat
+                    };
+                    saveGroups();
+                }
+
+                function addMemberToGroup(groupId, contactId) {
+                    if (groupsData[groupId] && contactsData[contactId]) {
+                        if (!groupsData[groupId].members.includes(contactId)) {
+                            groupsData[groupId].members.push(contactId);
+                            saveGroups();
+                            renderGroupManagement(); // Re-render pour mettre à jour la liste
+                            showToast(`${contactsData[contactId].name} ajouté à ${groupsData[groupId].name}`, 'success');
+                        } else {
+                            showToast(`${contactsData[contactId].name} est déjà membre de ce groupe.`, 'info');
+                        }
+                    } else {
+                        showToast('Erreur: Groupe ou contact introuvable.', 'danger');
+                    }
+                }
+
+                function removeMemberFromGroup(groupId, contactId) {
+                    if (groupsData[groupId]) {
+                        groupsData[groupId].members = groupsData[groupId].members.filter(member => member !== contactId);
+                        saveGroups();
+                        renderGroupManagement(); // Re-render pour mettre à jour la liste
+                        showToast(`${contactsData[contactId].name} retiré de ${groupsData[groupId].name}`, 'info');
+                    } else {
+                        showToast('Erreur: Groupe introuvable.', 'danger');
+                    }
+                }
+
+                function deleteGroup(groupId) {
+                    // Utilisation d'une modale personnalisée au lieu de confirm()
+                    const confirmationModalHtml = `
+                        <div class="modal fade" id="deleteGroupConfirmModal" tabindex="-1" aria-labelledby="deleteGroupConfirmModalLabel" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered">
+                                <div class="modal-content">
+                                    <div class="modal-header bg-danger text-white">
+                                        <h5 class="modal-title" id="deleteGroupConfirmModalLabel">Confirmer la suppression</h5>
+                                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        Êtes-vous sûr de vouloir supprimer le groupe "${groupsData[groupId].name}" ? Cette action est irréversible.
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                                        <button type="button" class="btn btn-danger" id="confirmDeleteGroupBtn">Supprimer</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    document.body.insertAdjacentHTML('beforeend', confirmationModalHtml);
+                    const deleteConfirmModal = new bootstrap.Modal(document.getElementById('deleteGroupConfirmModal'));
+                    deleteConfirmModal.show();
+
+                    document.getElementById('confirmDeleteGroupBtn').addEventListener('click', () => {
+                        delete groupsData[groupId];
+                        saveGroups();
+                        renderGroupManagement(); // Re-render pour mettre à jour la liste
+                        showToast('Groupe supprimé !', 'success');
+                        deleteConfirmModal.hide();
+                        document.getElementById('deleteGroupConfirmModal').remove(); // Supprimer la modale du DOM
+                    });
+
+                    // Nettoyer la modale quand elle est fermée sans confirmation
+                    document.getElementById('deleteGroupConfirmModal').addEventListener('hidden.bs.modal', function (event) {
+                        event.target.remove();
+                    });
+                }
+
+
+                function attachGroupManagementListeners() {
+                    document.querySelectorAll('.add-member-btn').forEach(button => {
+                        button.addEventListener('click', (event) => {
+                            const groupId = event.target.dataset.groupId;
+                            const selectElement = document.querySelector(`.add-member-select[data-group-id="${groupId}"]`);
+                            const contactId = selectElement.value;
+                            if (contactId) {
+                                addMemberToGroup(groupId, contactId);
+                                selectElement.value = ''; // Réinitialiser le sélecteur
+                            } else {
+                                showToast('Veuillez sélectionner un membre à ajouter.', 'warning');
+                            }
+                        });
+                    });
+
+                    document.querySelectorAll('.remove-member-btn').forEach(button => {
+                        button.addEventListener('click', (event) => {
+                            const groupId = event.target.dataset.groupId;
+                            const memberId = event.target.dataset.memberId;
+                            removeMemberFromGroup(groupId, memberId);
+                        });
+                    });
+
+                    document.querySelectorAll('.delete-group-btn').forEach(button => {
+                        button.addEventListener('click', (event) => {
+                            const groupId = event.target.dataset.groupId;
+                            deleteGroup(groupId);
+                        });
+                    });
+                }
+            }
+
+            /**
+             * Affiche la liste des conversations de groupe.
+             */
+            function renderGroupChatList() {
+                appContent.innerHTML = `
+                    <h2 class="mb-4 text-center"><i class="fas fa-comments"></i> Conversations de Groupes</h2>
+                    <div class="contacts-layout">
+                        <div class="contacts-list" id="groupChatsList">
+                            </div>
+                        <div class="chat-window" id="chatWindow">
+                            <div class="chat-placeholder">
+                                <i class="fas fa-users"></i>
+                                <h3>Sélectionnez un groupe pour commencer à discuter</h3>
+                                <p>Les conversations de groupe s'afficheront ici.</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                const groupChatsListElement = document.getElementById('groupChatsList');
+                if (Object.keys(groupsData).length === 0) {
+                    groupChatsListElement.innerHTML = `<p class="text-center text-muted p-3">Aucun groupe de conversation créé pour le moment. Créez-en un via "Gestion des groupes" !</p>`;
+                    return;
+                }
+
+                Object.keys(groupsData).forEach(groupId => {
+                    const group = groupsData[groupId];
+                    const groupItemHtml = `
+                        <div class="contact-item" data-group-id="${groupId}">
+                            <img src="https://placehold.co/40x40/0084ff/ffffff?text=G" alt="Groupe" style="border-radius: 50%; object-fit: cover; margin-right: 10px;">
+                            <div class="contact-info">
+                                <h6>${group.name}</h6>
+                                <p>${group.messages && group.messages.length > 0 ? group.messages[group.messages.length - 1].content : 'Aucun message'}</p>
+                            </div>
+                        </div>
+                    `;
+                    groupChatsListElement.insertAdjacentHTML('beforeend', groupItemHtml);
+                });
+
+                // Attacher les écouteurs d'événements aux éléments de groupe
+                document.querySelectorAll('#groupChatsList .contact-item').forEach(item => {
+                    item.addEventListener('click', (event) => {
+                        const selectedGroupId = event.currentTarget.dataset.groupId;
+                        renderGroupChatWindow(selectedGroupId);
+
+                        // Mettre à jour la classe active
+                        document.querySelectorAll('#groupChatsList .contact-item').forEach(c => c.classList.remove('active'));
+                        event.currentTarget.classList.add('active');
+                    });
+                });
+                console.log('Liste des conversations de groupe affichée.');
+            }
+
+
+            /**
+             * Affiche la fenêtre de chat pour un groupe donné.
+             * @param {string} groupId - L'ID du groupe à afficher.
+             */
+            function renderGroupChatWindow(groupId) {
+                currentChatContactId = groupId; // Store group ID here
+                currentChatType = 'group';
+                const group = groupsData[groupId];
+                const chatWindowElement = document.getElementById('chatWindow');
+
+                if (!group) {
+                    chatWindowElement.innerHTML = `<p class="text-danger text-center">Groupe non trouvé.</p>`;
+                    return;
+                }
+
+                chatWindowElement.innerHTML = `
+                    <div class="chat-header">
+                        <i class="fas fa-users fa-2x me-3"></i>
+                        <h5>${group.name}
+                            <small class="ms-2">(${group.members.length} membres)</small>
+                        </h5>
+                    </div>
+                    <div class="chat-messages" id="chatMessages">
+                        </div>
+                    <div class="chat-input-area">
+                        <input type="text" class="form-control" placeholder="Écrire un message..." id="messageInput">
+                        <button class="btn btn-primary" id="sendMessageBtn"><i class="fas fa-paper-plane"></i></button>
+                    </div>
+                `;
+
+                const chatMessagesElement = document.getElementById('chatMessages');
+                const messageInput = document.getElementById('messageInput');
+                const sendMessageBtn = document.getElementById('sendMessageBtn');
+
+                // Afficher les messages existants du groupe
+                group.messages.forEach(msg => {
+                    // For group messages, prepend sender's name if not 'me'
+                    const senderName = msg.type === 'me' ? 'Moi' : (contactsData[msg.senderId]?.name || 'Membre inconnu');
+                    displayMessage(msg.type, msg.content, msg.time, chatMessagesElement, senderName);
+                });
+                scrollToBottom(chatMessagesElement);
+
+                // Écouteur pour envoyer un message de groupe
+                sendMessageBtn.addEventListener('click', () => {
+                    sendGroupMessage(messageInput.value, groupId, chatMessagesElement, messageInput);
+                });
+
+                messageInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        sendGroupMessage(messageInput.value, groupId, chatMessagesElement, messageInput);
+                    }
+                });
+                console.log('Fenêtre de chat affichée pour le groupe:', group.name);
+            }
+
+            /**
+             * Envoie un message de groupe et le gère.
+             * @param {string} messageText - Le texte du message à envoyer.
+             * @param {string} groupId - L'ID du groupe.
+             * @param {HTMLElement} chatMessagesElement - L'élément conteneur des messages.
+             * @param {HTMLInputElement} messageInput - L'élément input du message.
+             */
+            function sendGroupMessage(messageText, groupId, chatMessagesElement, messageInput) {
+                if (messageText.trim() === '') return;
+
+                const group = groupsData[groupId];
+                const currentTime = new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+
+                // Assuming "me" is the current user. For a real app, you'd have a user ID.
+                const currentUserContactId = "johnDoe"; // Example: assuming "johnDoe" is the current user
+                const currentUser = contactsData[currentUserContactId];
+
+                const groupMessage = {
+                    type: "me", // The message is sent by "me" (the current user)
+                    contentType: "text",
+                    content: messageText.trim(),
+                    time: currentTime,
+                    senderId: currentUserContactId // Store the ID of the sender
+                };
+
+                group.messages.push(groupMessage);
+                // For group messages, prepend sender's name if not 'me'
+                const senderName = groupMessage.type === 'me' ? 'Moi' : (contactsData[groupMessage.senderId]?.name || 'Membre inconnu');
+                displayMessage(groupMessage.type, groupMessage.content, groupMessage.time, chatMessagesElement, senderName);
+                
+                group.lastMessage = messageText.trim(); // Update last message for the group
+                
+                messageInput.value = ''; // Clear input
+                scrollToBottom(chatMessagesElement);
+                saveGroups(); // Save updated group data
+            }
+
 
             // --- Écouteurs d'événements globaux ---
             // Ouvre la modale du panier et met à jour son contenu
@@ -1136,6 +2200,51 @@
                 document.querySelectorAll('.navbar-nav .nav-link').forEach(link => link.classList.remove('active'));
                 orderHistoryLink.classList.add('active');
             });
+
+            // Sidebar link event listeners
+            if (sidebarCategoriesLink) {
+                sidebarCategoriesLink.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    console.log('Sidebar: Catégories cliqué.');
+                    renderProducts(); // Pour l'instant, affiche tous les produits
+                });
+            }
+            if (sidebarFavoritesLink) {
+                sidebarFavoritesLink.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    console.log('Sidebar: Favoris cliqué.');
+                    appContent.innerHTML = `<h2 class="text-center mt-5">Section Favoris (à implémenter)</h2><p class="text-center">Vos produits favoris seront affichés ici.</p>`;
+                });
+            }
+            if (sidebarGroupChatsLink) {
+                sidebarGroupChatsLink.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    console.log('Sidebar: Groupes (Conversations) cliqué.');
+                    renderGroupChatList(); // Affiche la liste des conversations de groupe
+                });
+            }
+            if (sidebarGroupManagementLink) {
+                sidebarGroupManagementLink.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    console.log('Sidebar: Gestion des groupes cliqué.');
+                    renderGroupManagement(); // Affiche la section de gestion des groupes
+                });
+            }
+            if (sidebarContactsLink) {
+                sidebarContactsLink.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    console.log('Sidebar: Contacts cliqué.');
+                    renderContacts(); // Affiche la nouvelle section contacts
+                });
+            }
+            if (sidebarProfileLink) {
+                sidebarProfileLink.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    console.log('Sidebar: Mon Profil cliqué.');
+                    appContent.innerHTML = `<h2 class="text-center mt-5">Section Mon Profil (à implémenter)</h2><p class="text-center">Informations de votre profil utilisateur.</p>`;
+                });
+            }
+
 
             // Écouteur pour la recherche instantanée (desktop)
             searchInput.addEventListener('keyup', (e) => {
