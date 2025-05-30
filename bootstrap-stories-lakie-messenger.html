@@ -12,50 +12,58 @@
             width: 8px;
         }
         ::-webkit-scrollbar-track {
-            background: #f1f1f1;
+            background: var(--bs-body-bg); /* Utilise la variable de fond du corps de Bootstrap */
             border-radius: 10px;
-        }
-        html[data-bs-theme="dark"] ::-webkit-scrollbar-track {
-            background: #495057; /* Darker track for dark mode */
         }
         ::-webkit-scrollbar-thumb {
-            background: #888;
+            background: var(--bs-secondary); /* Utilise la variable de couleur secondaire de Bootstrap */
             border-radius: 10px;
         }
-        html[data-bs-theme="dark"] ::-webkit-scrollbar-thumb {
-            background: #6c757d; /* Darker thumb for dark mode */
-        }
         ::-webkit-scrollbar-thumb:hover {
-            background: #555;
-        }
-        html[data-bs-theme="dark"] ::-webkit-scrollbar-thumb:hover {
-            background: #868e96;
+            background: var(--bs-dark-secondary); /* Une couleur secondaire légèrement plus foncée au survol */
         }
 
-        /* Basic transition for theme changes */
+        /* Transition de base pour les changements de thème */
         body {
             transition: background-color 0.3s ease, color 0.3s ease;
+            /* S'appuie sur les classes bg-body et text-body de Bootstrap sur la balise body */
         }
-        /* Style for the file input button */
+
+        /* Couleur personnalisée pour la bordure des stories, s'adaptant au thème */
+        :root {
+            --app-story-border-light: #8b5cf6; /* Violet pour le mode clair */
+            --app-story-border-dark: #a78bfa;  /* Violet plus clair pour le mode sombre */
+        }
+        .story-avatar-border {
+            border: 3px solid var(--app-story-border-light);
+            padding: 2px;
+            border-radius: 50%;
+            transition: border-color 0.2s ease-in-out;
+        }
+        html[data-bs-theme="dark"] .story-avatar-border {
+            border-color: var(--app-story-border-dark);
+        }
+
+        /* Style pour le bouton d'entrée de fichier */
         .custom-file-input::-webkit-file-upload-button {
             visibility: hidden;
         }
         .custom-file-input::before {
             content: 'Choisir une image';
             display: inline-block;
-            background: linear-gradient(to right, #6366f1, #8b5cf6); /* Purple gradient */
+            background: linear-gradient(to right, #6366f1, #8b5cf6); /* Dégradé violet */
             color: white;
-            border-radius: 0.25rem; /* Bootstrap's rounded */
-            padding: 0.5rem 1rem; /* Bootstrap's py-2 px-4 */
+            border-radius: 0.25rem; /* Arrondi de Bootstrap */
+            padding: 0.5rem 1rem; /* Espacement py-2 px-4 de Bootstrap */
             outline: none;
             white-space: nowrap;
             cursor: pointer;
-            font-weight: 600; /* font-semibold */
+            font-weight: 600; /* Semi-gras */
             border: none;
             transition: all 0.2s ease-in-out;
         }
         .custom-file-input:hover::before {
-            background: linear-gradient(to right, #4f46e5, #7c3aed); /* Darker gradient on hover */
+            background: linear-gradient(to right, #4f46e5, #7c3aed); /* Dégradé plus foncé au survol */
             transform: translateY(-1px);
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
         }
@@ -64,18 +72,7 @@
             box-shadow: none;
         }
 
-        /* Story avatar border for active stories */
-        .story-avatar-border {
-            border: 3px solid #8b5cf6; /* Purple border */
-            padding: 2px; /* Space between border and image */
-            border-radius: 50%; /* Full circle */
-            transition: border-color 0.2s ease-in-out;
-        }
-        html[data-bs-theme="dark"] .story-avatar-border {
-            border-color: #a78bfa; /* Lighter purple in dark mode */
-        }
-
-        /* Active status indicator */
+        /* Indicateur de statut actif */
         .status-dot {
             position: absolute;
             bottom: 0;
@@ -83,19 +80,25 @@
             width: 12px;
             height: 12px;
             border-radius: 50%;
-            border: 2px solid var(--bs-body-bg); /* Border for visibility against dark avatars, adapts to theme */
-            background-color: #22c55e; /* Green for online */
+            border: 2px solid var(--bs-body-bg); /* Bordure pour la visibilité sur les avatars sombres, s'adapte au thème */
+            background-color: #22c55e; /* Vert pour en ligne */
         }
         .status-dot.offline {
-            background-color: #ef4444; /* Red for offline */
+            background-color: #ef4444; /* Rouge pour hors ligne */
         }
 
-        /* Ensure full height for body and html */
+        /* Assure la pleine hauteur pour le corps et le html */
         html, body {
             height: 100%;
         }
         .h-100vh {
             height: 100vh;
+        }
+
+        /* Effet de survol pour les contacts actifs */
+        .bg-body-tertiary-hover:hover {
+            transition: background-color 0.2s ease-in-out;
+            background-color: var(--bs-body-tertiary-rgb); /* Utilise la couleur de survol de Bootstrap */
         }
     </style>
 </head>
@@ -103,11 +106,11 @@
 
     <div class="container-fluid d-flex h-100vh p-0">
 
-        <aside class="d-none d-md-flex flex-column col-md-3 col-lg-2 col-xl-2 bg-body-tertiary shadow-lg border-end overflow-y-auto">
-            <div class="p-3 border-bottom">
+        <aside class="d-none d-md-flex flex-column col-md-3 col-lg-2 col-xl-2 bg-body-tertiary shadow-lg border-end">
+            <div class="p-3 border-bottom flex-shrink-0">
                 <h2 class="h5 mb-0 text-body">Contacts Actifs</h2>
             </div>
-            <div id="active-contacts-container" class="flex-grow-1 p-3 d-flex flex-column gap-3">
+            <div id="active-contacts-container" class="flex-grow-1 p-3 d-flex flex-column gap-3 overflow-y-auto">
                 </div>
         </aside>
 
@@ -180,10 +183,10 @@
         <div class="modal-dialog modal-fullscreen d-flex align-items-center justify-content-center m-0">
             <div class="modal-content bg-black border-0 rounded-0" style="width: 100%; height: 100%;">
                 <div class="modal-body p-0 d-flex flex-column align-items-center justify-content-center position-relative">
-                    <button id="close-viewer-button" type="button" class="btn-close btn-close-white position-absolute top-0 end-0 m-3 z-1" aria-label="Close"></button>
+                    <button id="close-viewer-button" type="button" class="btn-close btn-close-white position-absolute top-0 end-0 m-3 z-1" aria-label="Fermer"></button>
 
                     <div class="position-absolute top-0 start-0 m-3 d-flex align-items-center gap-3 z-1">
-                        <img id="viewer-user-avatar" src="" alt="User Avatar" class="rounded-circle object-fit-cover border border-white" style="width: 48px; height: 48px;">
+                        <img id="viewer-user-avatar" src="" alt="Avatar de l'utilisateur" class="rounded-circle object-fit-cover border border-white" style="width: 48px; height: 48px;">
                         <span id="viewer-user-name" class="text-white fw-semibold h5 mb-0"></span>
                     </div>
 
@@ -194,7 +197,7 @@
                         <i class="fa-solid fa-chevron-right fa-lg text-white"></i>
                     </button>
 
-                    <img id="viewer-image" src="" alt="Story Content" class="img-fluid object-fit-contain" style="max-width: 100%; max-height: 100%;">
+                    <img id="viewer-image" src="" alt="Contenu de la Story" class="img-fluid object-fit-contain" style="max-width: 100%; max-height: 100%;">
                     <p id="viewer-text" class="position-absolute bottom-0 start-50 translate-middle-x text-white fs-5 fw-medium text-center p-3 bg-black bg-opacity-50 rounded-3" style="max-width: 90%;"></p>
                 </div>
             </div>
@@ -229,7 +232,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" xintegrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
 
     <script>
-        // DOM Elements
+        // Éléments du DOM
         const themeToggle = document.getElementById('theme-toggle');
         const sunIcon = document.getElementById('sun-icon');
         const moonIcon = document.getElementById('moon-icon');
@@ -237,7 +240,7 @@
         const storyTextInput = document.getElementById('story-text-input');
         const addStoryButton = document.getElementById('add-story-button');
 
-        // Navigation elements
+        // Éléments de navigation
         const storiesNavButton = document.getElementById('stories-nav-button');
         const feedNavButton = document.getElementById('feed-nav-button');
         const storyReelsPage = document.getElementById('story-reels-page');
@@ -248,9 +251,9 @@
         const noFeedStoriesMessage = document.getElementById('no-feed-stories-message');
         const activeContactsContainer = document.getElementById('active-contacts-container');
 
-        // Full-screen story viewer elements
+        // Éléments du visualiseur de story en plein écran
         const storyViewerModalElement = document.getElementById('story-viewer-modal');
-        const storyViewerModal = new bootstrap.Modal(storyViewerModalElement); // Bootstrap Modal instance
+        const storyViewerModal = new bootstrap.Modal(storyViewerModalElement); // Instance de la modale Bootstrap
         const closeViewerButton = document.getElementById('close-viewer-button');
         const viewerUserAvatar = document.getElementById('viewer-user-avatar');
         const viewerUserName = document.getElementById('viewer-user-name');
@@ -259,7 +262,7 @@
         const viewerImage = document.getElementById('viewer-image');
         const viewerText = document.getElementById('viewer-text');
 
-        // Custom Message Box and Confirm Box elements (now Bootstrap Modals)
+        // Éléments des boîtes de message et de confirmation personnalisées (maintenant des modales Bootstrap)
         const messageBoxElement = document.getElementById('message-box');
         const messageBox = new bootstrap.Modal(messageBoxElement);
         const messageBoxText = document.getElementById('message-box-text');
@@ -270,19 +273,19 @@
         const confirmBoxText = document.getElementById('confirm-box-text');
         const confirmBoxYesButton = document.getElementById('confirm-box-yes-button');
         const confirmBoxNoButton = document.getElementById('confirm-box-no-button');
-        let confirmCallback = null; // Global variable to store the callback for confirmation
+        let confirmCallback = null; // Variable globale pour stocker le rappel pour la confirmation
 
-        // Initialize stories array from localStorage or empty array
+        // Initialise le tableau des stories à partir du localStorage ou un tableau vide
         let myStories = JSON.parse(localStorage.getItem('myStories')) || [];
-        // Initialize theme from localStorage or default to 'light'
+        // Initialise le thème à partir du localStorage ou par défaut à 'light'
         let currentTheme = localStorage.getItem('theme') || 'light';
 
-        // Current story being viewed in the modal
+        // Story actuellement affichée dans la modale
         let currentViewingUserId = null;
         let currentViewingStoryIndex = 0;
-        let currentStoriesList = []; // The list of stories for the current user being viewed
+        let currentStoriesList = []; // La liste des stories pour l'utilisateur actuellement affiché
 
-        // Other Users Data (provided by the user)
+        // Données des autres utilisateurs
         const otherUsersData = {
             "SharonRoseIA": {
                 name: "Sharon Rose IA",
@@ -399,15 +402,15 @@
             }
         };
 
-        // Combined stories data structure, grouped by user ID
-        // 'me' will be the key for the current user's stories
+        // Structure de données combinée des stories, regroupées par ID utilisateur
+        // 'me' sera la clé pour les stories de l'utilisateur actuel
         let allStoriesByUser = {
             'me': []
         };
 
         const CURRENT_USER_ID = 'me';
         const CURRENT_USER_NAME = 'Moi';
-        const CURRENT_USER_AVATAR = 'https://placehold.co/96x96/6366f1/ffffff?text=Moi'; // Placeholder for current user avatar
+        const CURRENT_USER_AVATAR = 'https://placehold.co/96x96/6366f1/ffffff?text=Moi'; // Placeholder pour l'avatar de l'utilisateur actuel
 
         /**
          * Affiche une boîte de message personnalisée.
@@ -415,14 +418,14 @@
          */
         function showMessageBox(message) {
             messageBoxText.textContent = message;
-            messageBox.show(); // Show Bootstrap modal
+            messageBox.show(); // Affiche la modale Bootstrap
         }
 
         /**
          * Gère le clic sur le bouton "OK" de la boîte de message.
          */
         messageBoxOkButton.addEventListener('click', () => {
-            messageBox.hide(); // Hide Bootstrap modal
+            messageBox.hide(); // Masque la modale Bootstrap
         });
 
         /**
@@ -432,7 +435,7 @@
          */
         function showConfirmBox(message, callback) {
             confirmBoxText.textContent = message;
-            confirmBox.show(); // Show Bootstrap modal
+            confirmBox.show(); // Affiche la modale Bootstrap
             confirmCallback = callback;
         }
 
@@ -440,7 +443,7 @@
          * Gère le clic sur le bouton "Oui" de la boîte de confirmation.
          */
         confirmBoxYesButton.addEventListener('click', () => {
-            confirmBox.hide(); // Hide Bootstrap modal
+            confirmBox.hide(); // Masque la modale Bootstrap
             if (confirmCallback) {
                 confirmCallback(true);
                 confirmCallback = null;
@@ -451,7 +454,7 @@
          * Gère le clic sur le bouton "Non" de la boîte de confirmation.
          */
         confirmBoxNoButton.addEventListener('click', () => {
-            confirmBox.hide(); // Hide Bootstrap modal
+            confirmBox.hide(); // Masque la modale Bootstrap
             if (confirmCallback) {
                 confirmCallback(false);
                 confirmCallback = null;
@@ -544,9 +547,9 @@
          * Rend les avatars des utilisateurs avec des stories pour la barre de reels horizontale.
          */
         function renderStoryReels() {
-            storyReelsContainer.innerHTML = ''; // Clear existing reels
+            storyReelsContainer.innerHTML = ''; // Efface les reels existants
 
-            // Add "My Story" reel first
+            // Ajoute le reel "Ma Story" en premier
             const myStoriesCount = myStories.length;
             const myStoryReel = document.createElement('div');
             myStoryReel.className = 'flex-shrink-0 text-center cursor-pointer';
@@ -563,7 +566,7 @@
             myStoryReel.onclick = () => openStoryViewer(CURRENT_USER_ID, 0);
             storyReelsContainer.appendChild(myStoryReel);
 
-            // Add other users' story reels
+            // Ajoute les reels des autres utilisateurs
             let hasStories = myStoriesCount > 0;
             for (const userId in allStoriesByUser) {
                 if (userId !== CURRENT_USER_ID && allStoriesByUser[userId].length > 0) {
@@ -593,10 +596,10 @@
          * Rend toutes les stories (mes stories et celles des autres) dans le fil d'actualité.
          */
         function renderFeedStories() {
-            feedContainer.innerHTML = ''; // Clear existing feed
+            feedContainer.innerHTML = ''; // Efface le fil d'actualité existant
 
             let allStories = [];
-            // Add my stories to the feed
+            // Ajoute mes stories au fil d'actualité
             myStories.forEach(story => {
                 allStories.push({
                     ...story,
@@ -607,7 +610,7 @@
                 });
             });
 
-            // Add other users' stories to the feed
+            // Ajoute les stories des autres utilisateurs au fil d'actualité
             for (const userId in allStoriesByUser) {
                 if (userId !== CURRENT_USER_ID) {
                     allStoriesByUser[userId].forEach(story => {
@@ -619,7 +622,7 @@
                 }
             }
 
-            // Sort all stories by timestamp (newest first)
+            // Trie toutes les stories par horodatage (les plus récentes en premier)
             allStories.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
 
             if (allStories.length === 0) {
@@ -630,7 +633,7 @@
 
             allStories.forEach(story => {
                 const storyCard = document.createElement('div');
-                storyCard.className = `card mb-3 shadow-sm`; // Bootstrap card classes
+                storyCard.className = `card mb-3 shadow-sm`; // Classes de carte Bootstrap
                 storyCard.innerHTML = `
                     <div class="card-body d-flex align-items-start gap-3">
                         <div class="flex-shrink-0">
@@ -638,7 +641,7 @@
                         </div>
                         <div class="flex-grow-1">
                             <h6 class="card-title fw-semibold text-primary mb-1">${story.userName}</h6>
-                            <img src="${story.image}" alt="Story Image" class="img-fluid rounded mb-2 cursor-pointer" onclick="openStoryViewer('${story.userId}', ${allStoriesByUser[story.userId].findIndex(s => s.id === story.id)})">
+                            <img src="${story.image}" alt="Image de Story" class="img-fluid rounded mb-2 cursor-pointer" onclick="openStoryViewer('${story.userId}', ${allStoriesByUser[story.userId].findIndex(s => s.id === story.id)})">
                             <p class="card-text text-body">${story.text || 'Pas de texte'}</p>
                             <small class="text-body-secondary">${new Date(story.timestamp).toLocaleString('fr-FR', {
                                 year: 'numeric', month: 'short', day: 'numeric',
@@ -660,9 +663,9 @@
          * Rend les contacts actifs dans la barre latérale.
          */
         function renderActiveContacts() {
-            activeContactsContainer.innerHTML = ''; // Clear existing contacts
+            activeContactsContainer.innerHTML = ''; // Efface les contacts existants
 
-            // Sort users by status (online first) and then alphabetically
+            // Trie les utilisateurs par statut (en ligne d'abord) puis par ordre alphabétique
             const sortedUsers = Object.values(otherUsersData).sort((a, b) => {
                 if (a.status === 'online' && b.status !== 'online') return -1;
                 if (a.status !== 'online' && b.status === 'online') return 1;
@@ -671,7 +674,7 @@
 
             sortedUsers.forEach(user => {
                 const contactDiv = document.createElement('div');
-                contactDiv.className = 'd-flex align-items-center gap-3 p-2 rounded-3 text-body-emphasis bg-body-tertiary-hover cursor-pointer transition-colors';
+                contactDiv.className = 'd-flex align-items-center gap-3 p-2 rounded-3 text-body-emphasis bg-body-tertiary-hover cursor-pointer';
                 contactDiv.innerHTML = `
                     <div class="position-relative">
                         <img src="${user.thumbnail || user.avatar}" alt="${user.name}" class="rounded-circle object-fit-cover" style="width: 40px; height: 40px;">
@@ -701,36 +704,36 @@
                 const reader = new FileReader();
                 reader.onload = (e) => {
                     const newStory = {
-                        id: Date.now(), // Unique ID for the story
-                        image: e.target.result, // Base64 image data
+                        id: Date.now(), // ID unique pour la story
+                        image: e.target.result, // Données d'image Base64
                         text: storyText,
                         timestamp: new Date().toISOString(),
-                        userId: CURRENT_USER_ID, // Added for consistency
-                        userName: CURRENT_USER_NAME, // Added for consistency
-                        userAvatar: CURRENT_USER_AVATAR // Added for consistency
+                        userId: CURRENT_USER_ID, // Ajouté pour la cohérence
+                        userName: CURRENT_USER_NAME, // Ajouté pour la cohérence
+                        userAvatar: CURRENT_USER_AVATAR // Ajouté pour la cohérence
                     };
-                    myStories.unshift(newStory); // Add to the beginning of the array
+                    myStories.unshift(newStory); // Ajoute au début du tableau
                     localStorage.setItem('myStories', JSON.stringify(myStories));
-                    allStoriesByUser[CURRENT_USER_ID] = myStories; // Update the grouped data
-                    renderStoryReels(); // Re-render reels
-                    if (!feedPage.classList.contains('d-none')) { // If feed page is active, re-render it too
+                    allStoriesByUser[CURRENT_USER_ID] = myStories; // Met à jour les données groupées
+                    renderStoryReels(); // Re-rend les reels
+                    if (!feedPage.classList.contains('d-none')) { // Si la page du fil d'actualité est active, la re-rend aussi
                         renderFeedStories();
                     }
-                    // Clear inputs
+                    // Efface les entrées
                     imageInput.value = '';
                     storyTextInput.value = '';
                 };
                 reader.readAsDataURL(imageFile);
             } else {
-                // If no image, just add text story
+                // Si pas d'image, ajoute juste la story textuelle
                 const newStory = {
                     id: Date.now(),
-                    image: 'https://placehold.co/96x96/cccccc/333333?text=No+Image', // Placeholder for text-only stories
+                    image: 'https://placehold.co/96x96/cccccc/333333?text=No+Image', // Placeholder pour les stories textuelles uniquement
                     text: storyText,
                     timestamp: new Date().toISOString(),
-                    userId: CURRENT_USER_ID, // Added for consistency
-                    userName: CURRENT_USER_NAME, // Added for consistency
-                    userAvatar: CURRENT_USER_AVATAR // Added for consistency
+                    userId: CURRENT_USER_ID, // Ajouté pour la cohérence
+                    userName: CURRENT_USER_NAME, // Ajouté pour la cohérence
+                    userAvatar: CURRENT_USER_AVATAR // Ajouté pour la cohérence
                 };
                 myStories.unshift(newStory);
                 localStorage.setItem('myStories', JSON.stringify(myStories));
@@ -759,7 +762,7 @@
 
             currentViewingStoryIndex = startIndex;
             updateStoryViewer();
-            storyViewerModal.show(); // Show Bootstrap modal
+            storyViewerModal.show(); // Affiche la modale Bootstrap
         }
 
         /**
@@ -768,7 +771,7 @@
         function updateStoryViewer() {
             const story = currentStoriesList[currentViewingStoryIndex];
             if (!story) {
-                closeStoryViewer();
+                closeViewer();
                 return;
             }
 
@@ -778,7 +781,7 @@
             viewerUserAvatar.src = story.userAvatar;
             viewerUserName.textContent = story.userName;
 
-            // Show/hide navigation buttons
+            // Affiche/masque les boutons de navigation
             prevStoryButton.classList.toggle('d-none', currentViewingStoryIndex === 0);
             nextStoryButton.classList.toggle('d-none', currentViewingStoryIndex === currentStoriesList.length - 1);
         }
@@ -806,17 +809,25 @@
         /**
          * Ferme le visualiseur de story en plein écran.
          */
-        function closeStoryViewer() {
-            storyViewerModal.hide(); // Hide Bootstrap modal
+        function closeViewer() {
+            storyViewerModal.hide(); // Masque la modale Bootstrap
             currentViewingUserId = null;
             currentViewingStoryIndex = 0;
             currentStoriesList = [];
         }
 
-        closeViewerButton.addEventListener('click', closeStoryViewer);
+        closeViewerButton.addEventListener('click', closeViewer);
+
+        // Ajout de l'écouteur d'événement pour le basculement de thème
+        themeToggle.addEventListener('click', () => {
+            currentTheme = document.documentElement.getAttribute('data-bs-theme') === 'light' ? 'dark' : 'light';
+            applyTheme(currentTheme);
+        });
 
         // Configuration initiale au chargement de la page
         document.addEventListener('DOMContentLoaded', () => {
+            // Récupère le thème depuis localStorage, sinon utilise 'light'
+            currentTheme = localStorage.getItem('theme') || 'light';
             applyTheme(currentTheme); // Applique le thème au chargement
             initializeOtherUsersStories(); // Génère les stories des autres utilisateurs
             renderActiveContacts(); // Rend les contacts actifs
