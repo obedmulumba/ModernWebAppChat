@@ -1,0 +1,827 @@
+<!DOCTYPE html>
+<html lang="fr" data-bs-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mon Application Stories</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" xintegrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" xintegrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <style>
+        /* Custom scrollbar for better aesthetics */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        html[data-bs-theme="dark"] ::-webkit-scrollbar-track {
+            background: #495057; /* Darker track for dark mode */
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 10px;
+        }
+        html[data-bs-theme="dark"] ::-webkit-scrollbar-thumb {
+            background: #6c757d; /* Darker thumb for dark mode */
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+        html[data-bs-theme="dark"] ::-webkit-scrollbar-thumb:hover {
+            background: #868e96;
+        }
+
+        /* Basic transition for theme changes */
+        body {
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        /* Style for the file input button */
+        .custom-file-input::-webkit-file-upload-button {
+            visibility: hidden;
+        }
+        .custom-file-input::before {
+            content: 'Choisir une image';
+            display: inline-block;
+            background: linear-gradient(to right, #6366f1, #8b5cf6); /* Purple gradient */
+            color: white;
+            border-radius: 0.25rem; /* Bootstrap's rounded */
+            padding: 0.5rem 1rem; /* Bootstrap's py-2 px-4 */
+            outline: none;
+            white-space: nowrap;
+            cursor: pointer;
+            font-weight: 600; /* font-semibold */
+            border: none;
+            transition: all 0.2s ease-in-out;
+        }
+        .custom-file-input:hover::before {
+            background: linear-gradient(to right, #4f46e5, #7c3aed); /* Darker gradient on hover */
+            transform: translateY(-1px);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+        .custom-file-input:active::before {
+            transform: translateY(0);
+            box-shadow: none;
+        }
+
+        /* Story avatar border for active stories */
+        .story-avatar-border {
+            border: 3px solid #8b5cf6; /* Purple border */
+            padding: 2px; /* Space between border and image */
+            border-radius: 50%; /* Full circle */
+            transition: border-color 0.2s ease-in-out;
+        }
+        html[data-bs-theme="dark"] .story-avatar-border {
+            border-color: #a78bfa; /* Lighter purple in dark mode */
+        }
+
+        /* Active status indicator */
+        .status-dot {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            border: 2px solid var(--bs-body-bg); /* Border for visibility against dark avatars, adapts to theme */
+            background-color: #22c55e; /* Green for online */
+        }
+        .status-dot.offline {
+            background-color: #ef4444; /* Red for offline */
+        }
+
+        /* Ensure full height for body and html */
+        html, body {
+            height: 100%;
+        }
+        .h-100vh {
+            height: 100vh;
+        }
+    </style>
+</head>
+<body class="bg-body text-body">
+
+    <div class="container-fluid d-flex h-100vh p-0">
+
+        <aside class="d-none d-md-flex flex-column col-md-3 col-lg-2 col-xl-2 bg-body-tertiary shadow-lg border-end overflow-y-auto">
+            <div class="p-3 border-bottom">
+                <h2 class="h5 mb-0 text-body">Contacts Actifs</h2>
+            </div>
+            <div id="active-contacts-container" class="flex-grow-1 p-3 d-flex flex-column gap-3">
+                </div>
+        </aside>
+
+        <div class="flex-grow-1 d-flex flex-column bg-body">
+            <header class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm flex-shrink-0">
+                <div class="container-fluid">
+                    <a class="navbar-brand h1 mb-0" href="#">Mon Application Stories</a>
+                    <div class="d-flex align-items-center gap-3">
+                        <button id="stories-nav-button" class="btn btn-outline-light rounded-pill active">
+                            Stories
+                        </button>
+                        <button id="feed-nav-button" class="btn btn-outline-light rounded-pill">
+                            Fil d'actualité
+                        </button>
+                        <button id="theme-toggle" class="btn btn-outline-light rounded-circle p-2">
+                            <i id="sun-icon" class="fa-solid fa-sun fa-lg d-none"></i>
+                            <i id="moon-icon" class="fa-solid fa-moon fa-lg"></i>
+                        </button>
+                    </div>
+                </div>
+            </header>
+
+            <div id="story-reels-page" class="flex-grow-1 d-flex flex-column">
+                <div class="p-3 border-bottom bg-body-tertiary flex-shrink-0">
+                    <h2 class="h5 mb-3 text-body">Ajouter une Story</h2>
+                    <div class="mb-3">
+                        <label for="image-input" class="form-label text-body-secondary">Image</label>
+                        <input type="file" id="image-input" accept="image/*" class="form-control custom-file-input">
+                    </div>
+                    <div class="mb-3">
+                        <label for="story-text-input" class="form-label text-body-secondary">Texte (optionnel)</label>
+                        <textarea id="story-text-input" rows="3" class="form-control text-body bg-body-secondary" placeholder="Écrivez votre story ici..."></textarea>
+                    </div>
+                    <button id="add-story-button" class="btn btn-primary w-100 py-2">
+                        Ajouter la Story
+                    </button>
+                </div>
+
+                <div class="p-3 border-bottom bg-body-tertiary flex-shrink-0">
+                    <div id="story-reels-container" class="d-flex flex-nowrap overflow-x-auto gap-3 pb-2">
+                        <div id="no-story-reels-message" class="text-center text-body-secondary w-100 d-none">
+                            Aucune story à afficher.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex-grow-1 p-3 overflow-y-auto">
+                    <p class="text-center text-body-secondary mt-3">
+                        Cliquez sur un avatar ci-dessus pour voir les stories.
+                    </p>
+                </div>
+            </div>
+
+            <div id="feed-page" class="flex-grow-1 d-flex flex-column d-none">
+                <div class="p-3 border-bottom bg-body-tertiary flex-shrink-0">
+                    <h2 class="h5 mb-0 text-body">Fil d'actualité des Stories</h2>
+                </div>
+                <div class="flex-grow-1 p-3 overflow-y-auto">
+                    <div id="feed-container" class="mx-auto" style="max-width: 768px;">
+                        <p id="no-feed-stories-message" class="text-center text-body-secondary mt-3 d-none">
+                            Aucune story dans le fil d'actualité.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="story-viewer-modal" class="modal fade" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-fullscreen d-flex align-items-center justify-content-center m-0">
+            <div class="modal-content bg-black border-0 rounded-0" style="width: 100%; height: 100%;">
+                <div class="modal-body p-0 d-flex flex-column align-items-center justify-content-center position-relative">
+                    <button id="close-viewer-button" type="button" class="btn-close btn-close-white position-absolute top-0 end-0 m-3 z-1" aria-label="Close"></button>
+
+                    <div class="position-absolute top-0 start-0 m-3 d-flex align-items-center gap-3 z-1">
+                        <img id="viewer-user-avatar" src="" alt="User Avatar" class="rounded-circle object-fit-cover border border-white" style="width: 48px; height: 48px;">
+                        <span id="viewer-user-name" class="text-white fw-semibold h5 mb-0"></span>
+                    </div>
+
+                    <button id="prev-story-button" class="btn btn-light bg-opacity-25 rounded-circle p-3 position-absolute start-0 translate-middle-y z-1" style="top: 50%;">
+                        <i class="fa-solid fa-chevron-left fa-lg text-white"></i>
+                    </button>
+                    <button id="next-story-button" class="btn btn-light bg-opacity-25 rounded-circle p-3 position-absolute end-0 translate-middle-y z-1" style="top: 50%;">
+                        <i class="fa-solid fa-chevron-right fa-lg text-white"></i>
+                    </button>
+
+                    <img id="viewer-image" src="" alt="Story Content" class="img-fluid object-fit-contain" style="max-width: 100%; max-height: 100%;">
+                    <p id="viewer-text" class="position-absolute bottom-0 start-50 translate-middle-x text-white fs-5 fw-medium text-center p-3 bg-black bg-opacity-50 rounded-3" style="max-width: 90%;"></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="message-box" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-sm modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-body text-center">
+                    <p id="message-box-text" class="lead mb-3"></p>
+                    <button id="message-box-ok-button" type="button" class="btn btn-primary">OK</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="confirm-box" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-sm modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-body text-center">
+                    <p id="confirm-box-text" class="lead mb-3"></p>
+                    <div class="d-flex justify-content-center gap-3">
+                        <button id="confirm-box-yes-button" type="button" class="btn btn-danger">Oui</button>
+                        <button id="confirm-box-no-button" type="button" class="btn btn-secondary">Non</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" xintegrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+
+    <script>
+        // DOM Elements
+        const themeToggle = document.getElementById('theme-toggle');
+        const sunIcon = document.getElementById('sun-icon');
+        const moonIcon = document.getElementById('moon-icon');
+        const imageInput = document.getElementById('image-input');
+        const storyTextInput = document.getElementById('story-text-input');
+        const addStoryButton = document.getElementById('add-story-button');
+
+        // Navigation elements
+        const storiesNavButton = document.getElementById('stories-nav-button');
+        const feedNavButton = document.getElementById('feed-nav-button');
+        const storyReelsPage = document.getElementById('story-reels-page');
+        const feedPage = document.getElementById('feed-page');
+        const storyReelsContainer = document.getElementById('story-reels-container');
+        const noStoryReelsMessage = document.getElementById('no-story-reels-message');
+        const feedContainer = document.getElementById('feed-container');
+        const noFeedStoriesMessage = document.getElementById('no-feed-stories-message');
+        const activeContactsContainer = document.getElementById('active-contacts-container');
+
+        // Full-screen story viewer elements
+        const storyViewerModalElement = document.getElementById('story-viewer-modal');
+        const storyViewerModal = new bootstrap.Modal(storyViewerModalElement); // Bootstrap Modal instance
+        const closeViewerButton = document.getElementById('close-viewer-button');
+        const viewerUserAvatar = document.getElementById('viewer-user-avatar');
+        const viewerUserName = document.getElementById('viewer-user-name');
+        const prevStoryButton = document.getElementById('prev-story-button');
+        const nextStoryButton = document.getElementById('next-story-button');
+        const viewerImage = document.getElementById('viewer-image');
+        const viewerText = document.getElementById('viewer-text');
+
+        // Custom Message Box and Confirm Box elements (now Bootstrap Modals)
+        const messageBoxElement = document.getElementById('message-box');
+        const messageBox = new bootstrap.Modal(messageBoxElement);
+        const messageBoxText = document.getElementById('message-box-text');
+        const messageBoxOkButton = document.getElementById('message-box-ok-button');
+
+        const confirmBoxElement = document.getElementById('confirm-box');
+        const confirmBox = new bootstrap.Modal(confirmBoxElement);
+        const confirmBoxText = document.getElementById('confirm-box-text');
+        const confirmBoxYesButton = document.getElementById('confirm-box-yes-button');
+        const confirmBoxNoButton = document.getElementById('confirm-box-no-button');
+        let confirmCallback = null; // Global variable to store the callback for confirmation
+
+        // Initialize stories array from localStorage or empty array
+        let myStories = JSON.parse(localStorage.getItem('myStories')) || [];
+        // Initialize theme from localStorage or default to 'light'
+        let currentTheme = localStorage.getItem('theme') || 'light';
+
+        // Current story being viewed in the modal
+        let currentViewingUserId = null;
+        let currentViewingStoryIndex = 0;
+        let currentStoriesList = []; // The list of stories for the current user being viewed
+
+        // Other Users Data (provided by the user)
+        const otherUsersData = {
+            "SharonRoseIA": {
+                name: "Sharon Rose IA",
+                avatar: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcST5rQlP8qzJSM7RbZlWnDILzTJWTHptxZh2Q&s",
+                thumbnail: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQvLBpSw3kWG6SFC5mQuTyMezAz0pBB2XTvYg&s",
+                status: "online",
+                lastMessage: "Posez-moi une question !",
+                isAI: true,
+                about: "Je suis un Api d'un grand modèle linguistique, entraîné par Google."
+            },
+            "johnDoe": {
+                name: "Galilée Doe",
+                avatar: "https://randomuser.me/api/portraits/men/50.jpg",
+                thumbnail: "https://randomuser.me/api/portraits/thumb/men/60.jpg",
+                status: "online",
+                lastMessage: "Hey, comment vas-tu ?",
+                about: "Bonjour ! Je suis Galilée et j'adore coder et explorer les nouvelles technologies."
+            },
+            "aliceSmith": {
+                name: "Alice Team",
+                avatar: "https://randomuser.me/api/portraits/women/60.jpg",
+                thumbnail: "https://randomuser.me/api/portraits/thumb/women/30.jpg",
+                status: "offline",
+                lastMessage: "Can we meet tomorrow?",
+                about: "Coordinatrice de projet passionnée par le travail d'équipe et l'innovation."
+            },
+            "bobJohnson": {
+                name: "Bob Johnson",
+                avatar: "https://randomuser.me/api/portraits/men/66.jpg",
+                thumbnail: "https://randomuser.me/api/portraits/thumb/men/66.jpg",
+                status: "online",
+                lastMessage: "Ça marche !",
+                about: "Développeur full-stack, toujours prêt pour de nouveaux défis techniques."
+            },
+            "elodieManiema": {
+                name: "Élodie Mbombo",
+                avatar: "https://randomuser.me/api/portraits/women/62.jpg",
+                thumbnail: "https://randomuser.me/api/portraits/thumb/women/62.jpg",
+                status: "online",
+                lastMessage: "Le projet avance bien, on a eu le feu vert pour la phase 2 !",
+                about: "Coordinatrice de projets humanitaires, dédiée au développement et à l'accès à l'énergie en RDC."
+            },
+            "patrickKivu": {
+                name: "Patrick Kabongo",
+                avatar: "https://randomuser.me/api/portraits/men/63.jpg",
+                thumbnail: "https://randomuser.me/api/portraits/thumb/men/63.jpg",
+                status: "offline",
+                lastMessage: "Tu as vu les derniers défis TikTok sur la danse congolaise ?",
+                about: "Influenceur et créateur de contenu passionné par la culture congolaise et les tendances virales."
+            },
+            "graciaKin": {
+                name: "Gracia Ngalula",
+                avatar: "https://randomuser.me/api/portraits/women/69.jpg",
+                thumbnail: "https://randomuser.me/api/portraits/thumb/women/69.jpg",
+                status: "online",
+                lastMessage: "La commande de pagnes est prête pour l'expédition.",
+                about: "Artisan-designer de textiles africains, spécialisée dans les pagnes traditionnels et modernes."
+            },
+            "cedricLubum": {
+                name: "Cédric Tshibangu",
+                avatar: "https://randomuser.me/api/portraits/men/65.jpg",
+                thumbnail: "https://randomuser.me/api/portraits/thumb/men/65.jpg",
+                status: "online",
+                lastMessage: "La séance de coaching a été très enrichissante.",
+                about: "Coach en développement personnel et professionnel, aide les jeunes entrepreneurs en RDC."
+            },
+            "christelleKasai": {
+                name: "Christelle Mpiana",
+                avatar: "https://randomuser.me/api/portraits/women/99.jpg",
+                thumbnail: "https://randomuser.me/api/portraits/thumb/women/99.jpg",
+                status: "offline",
+                lastMessage: "On se voit au marché central pour la livraison des vivres ?",
+                about: "Bénévole active dans plusieurs associations caritatives, très impliquée dans sa communauté."
+            },
+            "dadiKongo": {
+                name: "Dadi Mputu",
+                avatar: "https://randomuser.me/api/portraits/men/65.jpg",
+                thumbnail: "https://randomuser.me/api/portraits/thumb/men/65.jpg",
+                status: "online",
+                lastMessage: "Les résultats du match de l'AS V.Club sont tombés !",
+                about: "Fan inconditionnel de football congolais et commentateur sportif amateur sur les réseaux sociaux."
+            },
+            "giselleNord": {
+                name: "Gisèle Bakonga",
+                avatar: "https://randomuser.me/api/portraits/women/33.jpg",
+                thumbnail: "https://randomuser.me/api/portraits/thumb/women/33.jpg",
+                status: "online",
+                lastMessage: "La présentation pour les investisseurs est prête.",
+                about: "Consultante en finance et entrepreneuriat, accompagne les startups congolaises dans leur recherche de financement."
+            },
+            "jeromeSud": {
+                name: "Jérôme Lusamba",
+                avatar: "https://randomuser.me/api/portraits/men/21.jpg",
+                thumbnail: "https://randomuser.me/api/portraits/thumb/men/21.jpg",
+                status: "offline",
+                lastMessage: "La récolte de manioc a été exceptionnelle cette saison.",
+                about: "Agriculteur et leader communautaire, œuvrant pour la sécurité alimentaire."
+            },
+            "nadineKatanga": {
+                name: "Nadine Tshilombo",
+                avatar: "https://randomuser.me/api/portraits/women/70.jpg",
+                thumbnail: "https://randomuser.me/api/portraits/thumb/women/70.jpg",
+                status: "online",
+                lastMessage: "Le nouveau single de Fally Ipupa est une bombe !",
+                about: "Passionnée de musique congolaise, toujours à l'affût des dernières sorties et des tendances afro-urbaines."
+            },
+            "olivierOrientale": {
+                name: "Olivier Kalala",
+                avatar: "https://randomuser.me/api/portraits/men/82.jpg",
+                thumbnail: "https://randomuser.me/api/portraits/thumb/men/82.jpg",
+                status: "offline",
+                lastMessage: "J'ai besoin de ton avis sur la nouvelle stratégie digitale.",
+                about: "Expert en marketing digital et communication, aide les entreprises congolaises à se digitaliser."
+            }
+        };
+
+        // Combined stories data structure, grouped by user ID
+        // 'me' will be the key for the current user's stories
+        let allStoriesByUser = {
+            'me': []
+        };
+
+        const CURRENT_USER_ID = 'me';
+        const CURRENT_USER_NAME = 'Moi';
+        const CURRENT_USER_AVATAR = 'https://placehold.co/96x96/6366f1/ffffff?text=Moi'; // Placeholder for current user avatar
+
+        /**
+         * Affiche une boîte de message personnalisée.
+         * @param {string} message - Le message à afficher.
+         */
+        function showMessageBox(message) {
+            messageBoxText.textContent = message;
+            messageBox.show(); // Show Bootstrap modal
+        }
+
+        /**
+         * Gère le clic sur le bouton "OK" de la boîte de message.
+         */
+        messageBoxOkButton.addEventListener('click', () => {
+            messageBox.hide(); // Hide Bootstrap modal
+        });
+
+        /**
+         * Affiche une boîte de confirmation personnalisée.
+         * @param {string} message - Le message de confirmation à afficher.
+         * @param {function} callback - La fonction de rappel à exécuter après la confirmation (prend un booléen en argument).
+         */
+        function showConfirmBox(message, callback) {
+            confirmBoxText.textContent = message;
+            confirmBox.show(); // Show Bootstrap modal
+            confirmCallback = callback;
+        }
+
+        /**
+         * Gère le clic sur le bouton "Oui" de la boîte de confirmation.
+         */
+        confirmBoxYesButton.addEventListener('click', () => {
+            confirmBox.hide(); // Hide Bootstrap modal
+            if (confirmCallback) {
+                confirmCallback(true);
+                confirmCallback = null;
+            }
+        });
+
+        /**
+         * Gère le clic sur le bouton "Non" de la boîte de confirmation.
+         */
+        confirmBoxNoButton.addEventListener('click', () => {
+            confirmBox.hide(); // Hide Bootstrap modal
+            if (confirmCallback) {
+                confirmCallback(false);
+                confirmCallback = null;
+            }
+        });
+
+        /**
+         * Applique le thème sélectionné (clair ou sombre) au document.
+         * @param {string} theme - Le thème à appliquer ('light' ou 'dark').
+         */
+        function applyTheme(theme) {
+            document.documentElement.setAttribute('data-bs-theme', theme);
+            if (theme === 'dark') {
+                sunIcon.classList.remove('d-none');
+                moonIcon.classList.add('d-none');
+            } else {
+                sunIcon.classList.add('d-none');
+                moonIcon.classList.remove('d-none');
+            }
+            localStorage.setItem('theme', theme);
+        }
+
+        /**
+         * Génère des stories fictives pour un utilisateur donné.
+         * @param {object} user - L'objet utilisateur de `otherUsersData`.
+         * @returns {Array<object>} Un tableau d'objets story simulés.
+         */
+        function generateDummyStoriesForUser(user) {
+            const stories = [];
+            const baseTimestamp = Date.now();
+            const texts = [
+                user.lastMessage || "Nouvelle story !",
+                "Un moment partagé.",
+                "Aujourd'hui, c'était ça !",
+                "Pensées du jour.",
+                "Petit aperçu de ma journée."
+            ];
+
+            // Génère 1 à 3 stories par utilisateur
+            const numStories = Math.floor(Math.random() * 3) + 1;
+            for (let i = 0; i < numStories; i++) {
+                stories.push({
+                    id: `${user.id}-${baseTimestamp}-${i}`,
+                    userId: user.id,
+                    userName: user.name,
+                    userAvatar: user.thumbnail || user.avatar,
+                    image: user.thumbnail || user.avatar, // Utilise l'avatar de l'utilisateur comme image de story
+                    text: texts[Math.floor(Math.random() * texts.length)],
+                    timestamp: new Date(baseTimestamp - (i * 3600 * 1000 * 24)).toISOString() // Simule des heures différentes
+                });
+            }
+            return stories;
+        }
+
+        /**
+         * Initialise les stories des autres utilisateurs et les regroupe.
+         */
+        function initializeOtherUsersStories() {
+            for (const userId in otherUsersData) {
+                if (otherUsersData.hasOwnProperty(userId)) {
+                    const user = otherUsersData[userId];
+                    allStoriesByUser[userId] = generateDummyStoriesForUser(user);
+                }
+            }
+        }
+
+        /**
+         * Affiche la page des "Stories" (les reels horizontaux).
+         */
+        function showStoryReelsPage() {
+            storyReelsPage.classList.remove('d-none');
+            feedPage.classList.add('d-none');
+            storiesNavButton.classList.add('active');
+            feedNavButton.classList.remove('active');
+            renderStoryReels();
+        }
+
+        /**
+         * Affiche la page du "Fil d'actualité" (toutes les stories en liste verticale).
+         */
+        function showFeedPage() {
+            feedPage.classList.remove('d-none');
+            storyReelsPage.classList.add('d-none');
+            feedNavButton.classList.add('active');
+            storiesNavButton.classList.remove('active');
+            renderFeedStories();
+        }
+
+        /**
+         * Rend les avatars des utilisateurs avec des stories pour la barre de reels horizontale.
+         */
+        function renderStoryReels() {
+            storyReelsContainer.innerHTML = ''; // Clear existing reels
+
+            // Add "My Story" reel first
+            const myStoriesCount = myStories.length;
+            const myStoryReel = document.createElement('div');
+            myStoryReel.className = 'flex-shrink-0 text-center cursor-pointer';
+            myStoryReel.innerHTML = `
+                <div class="position-relative d-inline-block rounded-circle bg-secondary-subtle d-flex align-items-center justify-content-center mx-auto mb-1
+                    ${myStoriesCount > 0 ? 'story-avatar-border' : 'border border-secondary-subtle'}"
+                    style="width: 80px; height: 80px; background-image: url('${CURRENT_USER_AVATAR}'); background-size: cover; background-position: center;">
+                    ${myStoriesCount === 0 ? `
+                        <i class="fa-solid fa-plus fa-2x text-body-secondary"></i>
+                    ` : ''}
+                </div>
+                <span class="d-block text-body-secondary small">${CURRENT_USER_NAME}</span>
+            `;
+            myStoryReel.onclick = () => openStoryViewer(CURRENT_USER_ID, 0);
+            storyReelsContainer.appendChild(myStoryReel);
+
+            // Add other users' story reels
+            let hasStories = myStoriesCount > 0;
+            for (const userId in allStoriesByUser) {
+                if (userId !== CURRENT_USER_ID && allStoriesByUser[userId].length > 0) {
+                    hasStories = true;
+                    const user = otherUsersData[userId];
+                    const userStoryReel = document.createElement('div');
+                    userStoryReel.className = 'flex-shrink-0 text-center cursor-pointer';
+                    userStoryReel.innerHTML = `
+                        <div class="position-relative d-inline-block rounded-circle story-avatar-border d-flex align-items-center justify-content-center mx-auto mb-1"
+                            style="width: 80px; height: 80px; background-image: url('${user.thumbnail || user.avatar}'); background-size: cover; background-position: center;">
+                        </div>
+                        <span class="d-block text-body-secondary small">${user.name.split(' ')[0]}</span>
+                    `;
+                    userStoryReel.onclick = () => openStoryViewer(userId, 0);
+                    storyReelsContainer.appendChild(userStoryReel);
+                }
+            }
+
+            if (!hasStories) {
+                noStoryReelsMessage.classList.remove('d-none');
+            } else {
+                noStoryReelsMessage.classList.add('d-none');
+            }
+        }
+
+        /**
+         * Rend toutes les stories (mes stories et celles des autres) dans le fil d'actualité.
+         */
+        function renderFeedStories() {
+            feedContainer.innerHTML = ''; // Clear existing feed
+
+            let allStories = [];
+            // Add my stories to the feed
+            myStories.forEach(story => {
+                allStories.push({
+                    ...story,
+                    userId: CURRENT_USER_ID,
+                    userName: CURRENT_USER_NAME,
+                    userAvatar: CURRENT_USER_AVATAR,
+                    isMine: true
+                });
+            });
+
+            // Add other users' stories to the feed
+            for (const userId in allStoriesByUser) {
+                if (userId !== CURRENT_USER_ID) {
+                    allStoriesByUser[userId].forEach(story => {
+                        allStories.push({
+                            ...story,
+                            isMine: false
+                        });
+                    });
+                }
+            }
+
+            // Sort all stories by timestamp (newest first)
+            allStories.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+            if (allStories.length === 0) {
+                noFeedStoriesMessage.classList.remove('d-none');
+            } else {
+                noFeedStoriesMessage.classList.add('d-none');
+            }
+
+            allStories.forEach(story => {
+                const storyCard = document.createElement('div');
+                storyCard.className = `card mb-3 shadow-sm`; // Bootstrap card classes
+                storyCard.innerHTML = `
+                    <div class="card-body d-flex align-items-start gap-3">
+                        <div class="flex-shrink-0">
+                            <img src="${story.userAvatar}" alt="${story.userName}" class="rounded-circle object-fit-cover border border-primary" style="width: 48px; height: 48px;">
+                        </div>
+                        <div class="flex-grow-1">
+                            <h6 class="card-title fw-semibold text-primary mb-1">${story.userName}</h6>
+                            <img src="${story.image}" alt="Story Image" class="img-fluid rounded mb-2 cursor-pointer" onclick="openStoryViewer('${story.userId}', ${allStoriesByUser[story.userId].findIndex(s => s.id === story.id)})">
+                            <p class="card-text text-body">${story.text || 'Pas de texte'}</p>
+                            <small class="text-body-secondary">${new Date(story.timestamp).toLocaleString('fr-FR', {
+                                year: 'numeric', month: 'short', day: 'numeric',
+                                hour: '2-digit', minute: '2-digit'
+                            })}</small>
+                        </div>
+                        ${story.isMine ? `
+                            <button class="btn btn-sm btn-danger position-absolute top-0 end-0 m-2" onclick="deleteStory(${story.id}); event.stopPropagation();">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </button>
+                        ` : ''}
+                    </div>
+                `;
+                feedContainer.appendChild(storyCard);
+            });
+        }
+
+        /**
+         * Rend les contacts actifs dans la barre latérale.
+         */
+        function renderActiveContacts() {
+            activeContactsContainer.innerHTML = ''; // Clear existing contacts
+
+            // Sort users by status (online first) and then alphabetically
+            const sortedUsers = Object.values(otherUsersData).sort((a, b) => {
+                if (a.status === 'online' && b.status !== 'online') return -1;
+                if (a.status !== 'online' && b.status === 'online') return 1;
+                return a.name.localeCompare(b.name);
+            });
+
+            sortedUsers.forEach(user => {
+                const contactDiv = document.createElement('div');
+                contactDiv.className = 'd-flex align-items-center gap-3 p-2 rounded-3 text-body-emphasis bg-body-tertiary-hover cursor-pointer transition-colors';
+                contactDiv.innerHTML = `
+                    <div class="position-relative">
+                        <img src="${user.thumbnail || user.avatar}" alt="${user.name}" class="rounded-circle object-fit-cover" style="width: 40px; height: 40px;">
+                        <span class="status-dot ${user.status === 'offline' ? 'offline' : ''}"></span>
+                    </div>
+                    <span class="fw-medium">${user.name}</span>
+                `;
+                activeContactsContainer.appendChild(contactDiv);
+            });
+        }
+
+
+        /**
+         * Ajoute une nouvelle story basée sur l'entrée de l'utilisateur.
+         * Lit l'image comme une chaîne Base64 et l'enregistre avec le texte et l'horodatage.
+         */
+        addStoryButton.addEventListener('click', () => {
+            const imageFile = imageInput.files[0];
+            const storyText = storyTextInput.value.trim();
+
+            if (!imageFile && !storyText) {
+                showMessageBox("Veuillez ajouter une image ou du texte pour votre story.");
+                return;
+            }
+
+            if (imageFile) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const newStory = {
+                        id: Date.now(), // Unique ID for the story
+                        image: e.target.result, // Base64 image data
+                        text: storyText,
+                        timestamp: new Date().toISOString(),
+                        userId: CURRENT_USER_ID, // Added for consistency
+                        userName: CURRENT_USER_NAME, // Added for consistency
+                        userAvatar: CURRENT_USER_AVATAR // Added for consistency
+                    };
+                    myStories.unshift(newStory); // Add to the beginning of the array
+                    localStorage.setItem('myStories', JSON.stringify(myStories));
+                    allStoriesByUser[CURRENT_USER_ID] = myStories; // Update the grouped data
+                    renderStoryReels(); // Re-render reels
+                    if (!feedPage.classList.contains('d-none')) { // If feed page is active, re-render it too
+                        renderFeedStories();
+                    }
+                    // Clear inputs
+                    imageInput.value = '';
+                    storyTextInput.value = '';
+                };
+                reader.readAsDataURL(imageFile);
+            } else {
+                // If no image, just add text story
+                const newStory = {
+                    id: Date.now(),
+                    image: 'https://placehold.co/96x96/cccccc/333333?text=No+Image', // Placeholder for text-only stories
+                    text: storyText,
+                    timestamp: new Date().toISOString(),
+                    userId: CURRENT_USER_ID, // Added for consistency
+                    userName: CURRENT_USER_NAME, // Added for consistency
+                    userAvatar: CURRENT_USER_AVATAR // Added for consistency
+                };
+                myStories.unshift(newStory);
+                localStorage.setItem('myStories', JSON.stringify(myStories));
+                allStoriesByUser[CURRENT_USER_ID] = myStories;
+                renderStoryReels();
+                if (!feedPage.classList.contains('d-none')) {
+                    renderFeedStories();
+                }
+                storyTextInput.value = '';
+            }
+        });
+
+        /**
+         * Ouvre le visualiseur de story en plein écran pour un utilisateur et une story donnés.
+         * @param {string} userId - L'ID de l'utilisateur dont les stories doivent être affichées.
+         * @param {number} startIndex - L'index de la story à afficher en premier.
+         */
+        function openStoryViewer(userId, startIndex) {
+            currentViewingUserId = userId;
+            currentStoriesList = allStoriesByUser[userId] || [];
+
+            if (currentStoriesList.length === 0) {
+                showMessageBox("Cet utilisateur n'a pas de stories à afficher.");
+                return;
+            }
+
+            currentViewingStoryIndex = startIndex;
+            updateStoryViewer();
+            storyViewerModal.show(); // Show Bootstrap modal
+        }
+
+        /**
+         * Met à jour le contenu du visualiseur de story en fonction de l'index actuel.
+         */
+        function updateStoryViewer() {
+            const story = currentStoriesList[currentViewingStoryIndex];
+            if (!story) {
+                closeStoryViewer();
+                return;
+            }
+
+            viewerImage.src = story.image;
+            viewerText.textContent = story.text || '';
+
+            viewerUserAvatar.src = story.userAvatar;
+            viewerUserName.textContent = story.userName;
+
+            // Show/hide navigation buttons
+            prevStoryButton.classList.toggle('d-none', currentViewingStoryIndex === 0);
+            nextStoryButton.classList.toggle('d-none', currentViewingStoryIndex === currentStoriesList.length - 1);
+        }
+
+        /**
+         * Navigue à la story précédente dans le visualiseur.
+         */
+        prevStoryButton.addEventListener('click', () => {
+            if (currentViewingStoryIndex > 0) {
+                currentViewingStoryIndex--;
+                updateStoryViewer();
+            }
+        });
+
+        /**
+         * Navigue à la story suivante dans le visualiseur.
+         */
+        nextStoryButton.addEventListener('click', () => {
+            if (currentViewingStoryIndex < currentStoriesList.length - 1) {
+                currentViewingStoryIndex++;
+                updateStoryViewer();
+            }
+        });
+
+        /**
+         * Ferme le visualiseur de story en plein écran.
+         */
+        function closeStoryViewer() {
+            storyViewerModal.hide(); // Hide Bootstrap modal
+            currentViewingUserId = null;
+            currentViewingStoryIndex = 0;
+            currentStoriesList = [];
+        }
+
+        closeViewerButton.addEventListener('click', closeStoryViewer);
+
+        // Configuration initiale au chargement de la page
+        document.addEventListener('DOMContentLoaded', () => {
+            applyTheme(currentTheme); // Applique le thème au chargement
+            initializeOtherUsersStories(); // Génère les stories des autres utilisateurs
+            renderActiveContacts(); // Rend les contacts actifs
+            showStoryReelsPage(); // Affiche la page des reels de stories par défaut
+        });
+    </script>
+</body>
+</html>
