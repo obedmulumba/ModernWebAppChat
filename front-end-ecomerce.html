@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>JJ-Commerce</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" xintegrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" xintegrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBn5jowfCEajY+waCDt+T+tFYA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
 
     <style>
         body {
@@ -469,6 +469,7 @@
             display: flex;
             align-items: center;
             box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+            cursor: pointer; /* Make header clickable */
         }
 
         .chat-header .back-button {
@@ -698,6 +699,115 @@
         .profile-avatar-container .upload-icon:hover {
             background-color: #006acc;
         }
+
+        /* Header profile display */
+        .profile-header-display {
+            cursor: pointer;
+        }
+        .profile-header-display img {
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            width: 30px; /* Reduced size */
+            height: 30px; /* Reduced size */
+        }
+
+        /* New right sidebar for contact details */
+        .contact-details-sidebar {
+            width: 280px; /* Fixed width for the sidebar */
+            background-color: #f8f9fa;
+            border-left: 1px solid #eee;
+            padding: 20px;
+            box-shadow: -2px 0 5px rgba(0, 0, 0, 0.05);
+            flex-shrink: 0;
+            display: none; /* Hidden by default */
+            overflow-y: auto;
+            /* Optional: Add transition for smooth appearance */
+            transition: width 0.3s ease-in-out, transform 0.3s ease-in-out;
+            transform: translateX(100%); /* Start off-screen */
+        }
+
+        .contact-details-sidebar.active {
+            display: block; /* Show when active */
+            transform: translateX(0); /* Slide in */
+        }
+
+        /* Adjust main layout when sidebar is active */
+        .contacts-layout.sidebar-active .chat-window {
+            /* Adjust width or flex basis if needed */
+            flex-grow: 1; /* Ensure chat window still grows */
+        }
+
+        /* Styles for content inside the sidebar */
+        .contact-details-sidebar .header {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 20px;
+        }
+        .contact-details-sidebar .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: #666;
+            cursor: pointer;
+        }
+        .contact-details-sidebar .close-btn:hover {
+            color: #333;
+        }
+
+        .contact-details-sidebar .avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin: 0 auto 15px auto;
+            border: 3px solid #0084ff;
+        }
+        .contact-details-sidebar h5 {
+            text-align: center;
+            margin-bottom: 5px;
+            color: #333;
+        }
+        .contact-details-sidebar .status {
+            text-align: center;
+            font-size: 0.9em;
+            color: #666;
+            margin-bottom: 20px;
+        }
+        .contact-details-sidebar .info-item {
+            margin-bottom: 15px;
+            padding: 10px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        }
+        .contact-details-sidebar .info-item i {
+            margin-right: 10px;
+            color: #0084ff;
+        }
+        .contact-details-sidebar .info-item strong {
+            color: #333;
+        }
+
+        /* Responsive adjustments for sidebar */
+        @media (max-width: 992px) { /* Adjust breakpoint if sidebar should be hidden earlier */
+            .contact-details-sidebar {
+                position: fixed; /* Fixed position on smaller screens */
+                top: 70px; /* Below navbar */
+                right: 0;
+                bottom: 0;
+                width: 80%; /* Take more width on smaller screens */
+                max-width: 300px; /* Max width for consistency */
+                z-index: 1050; /* Above other content but below modals */
+                transform: translateX(100%); /* Ensure it's off-screen */
+            }
+            .contact-details-sidebar.active {
+                transform: translateX(0);
+            }
+            .contacts-layout.sidebar-active .contacts-list,
+            .contacts-layout.sidebar-active .chat-window {
+                /* On smaller screens, when sidebar is active, hide other parts */
+                display: none;
+            }
+        }
     </style>
 </head>
 <body>
@@ -715,6 +825,11 @@
                 </div>
 
                 <div class="d-flex align-items-center">
+                    <div class="profile-header-display d-none d-md-flex align-items-center me-3" id="headerProfileLink">
+                        <img id="headerProfileAvatar" src="https://placehold.co/30x30/cccccc/ffffff?text=U" alt="Profile" class="rounded-circle me-2">
+                        <span id="headerUsername" class="text-white fw-bold d-none d-lg-block">Utilisateur</span>
+                    </div>
+
                     <button class="btn btn-primary position-relative me-3" id="cartBtn">
                         <i class="fas fa-shopping-cart fa-lg"></i>
                         <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="cartCount">
@@ -739,6 +854,9 @@
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" href="#" id="orderHistoryLink"><i class="fas fa-history"></i> Mes Commandes</a>
+                        </li>
+                        <li class="nav-item d-md-none">
+                            <a class="nav-link" href="#" id="mobileProfileLink"><i class="fas fa-user-circle"></i> Mon Profil</a>
                         </li>
                     </ul>
                 </div>
@@ -814,7 +932,7 @@
 
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" xintegrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eGbF8s1hS2mt0n2u" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
@@ -846,6 +964,10 @@
             let cart = JSON.parse(localStorage.getItem('cart')) || [];
             // Tableau pour stocker les produits chargés de l'API
             let allProducts = [];
+
+            // Global variable for the sidebar element
+            let contactDetailsSidebar = null;
+
 
             // Données des contacts (fournies par l'utilisateur)
             const contactsData = {
@@ -1177,7 +1299,7 @@
                 // Add carousel only if displaying all products (not filtered search results)
                 if (productsToRenderParam === null || productsToRenderParam === allProducts) {
                     productsHtml += `
-                        <div id="productCarousel" class="carousel slide mb-4" data-bs-ride="carousel">
+                        <div id="productCarousel" class="carousel slide mb-4" data-bs-ride="carousel" data-bs-interval="5000">
                             <div class="carousel-indicators">
                                 <button type="button" data-bs-target="#productCarousel" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
                                 <button type="button" data-bs-target="#productCarousel" data-bs-slide-to="1" aria-label="Slide 2"></button>
@@ -1291,6 +1413,7 @@
 
                 appContent.innerHTML = productsHtml; // Injecte le HTML dans le DOM
                 attachAddToCartListeners(); // Attache les écouteurs d'événements aux boutons "Ajouter au panier"
+                hideContactDetailsSidebar(); // Ensure sidebar is hidden when rendering products
                 console.log('Produits affichés sur la page d\'accueil (filtrés si applicable).');
             }
 
@@ -1417,6 +1540,7 @@
                     renderProducts(); // Retourne à la page des produits
                     cartModal.show(); // Ouvre la modale du panier
                 });
+                hideContactDetailsSidebar(); // Ensure sidebar is hidden when rendering checkout form
                 console.log('Formulaire de commande affiché.');
             }
 
@@ -1498,6 +1622,7 @@
                 });
                 orderHistoryHtml += '</div>';
                 appContent.innerHTML = orderHistoryHtml; // Injecte le HTML dans le DOM
+                hideContactDetailsSidebar(); // Ensure sidebar is hidden when rendering order history
                 console.log('Historique des commandes affiché.');
             }
 
@@ -1763,8 +1888,13 @@
                                 <p>Vos conversations s'afficheront ici.</p>
                             </div>
                         </div>
+                        <div class="contact-details-sidebar" id="contactDetailsSidebar">
+                            </div>
                     </div>
                 `;
+                // Get the sidebar element once DOM is loaded for the chat view
+                contactDetailsSidebar = document.getElementById('contactDetailsSidebar');
+                hideContactDetailsSidebar(); // Ensure it's hidden initially for this view
 
                 const contactsListElement = document.getElementById('contactsList');
                 Object.keys(contactsData).forEach(contactId => {
@@ -1811,10 +1941,9 @@
                 }
 
                 chatWindowElement.innerHTML = `
-                    <div class="chat-header">
-                        <button class="back-button" id="backToContactsListBtn"><i class="fas fa-arrow-left"></i></button>
+                    <div class="chat-header" id="chatHeader"> <button class="back-button" id="backToContactsListBtn"><i class="fas fa-arrow-left"></i></button>
                         <img src="${contact.avatar}" alt="${contact.name}" onerror="this.onerror=null;this.src='https://placehold.co/50x50/0084ff/ffffff?text=${contact.name.charAt(0)}'">
-                        <h5>${contact.name}
+                        <h5 id="chatHeaderName">${contact.name}
                             <span class="status-dot ${contact.status === 'offline' ? 'offline' : ''}"></span>
                         </h5>
                     </div>
@@ -1830,10 +1959,21 @@
                 const messageInput = document.getElementById('messageInput');
                 const sendMessageBtn = document.getElementById('sendMessageBtn');
                 const backToContactsListBtn = document.getElementById('backToContactsListBtn');
+                const chatHeaderElement = document.getElementById('chatHeader'); // Get the chat header element
 
                 backToContactsListBtn.addEventListener('click', () => {
                     renderContacts(); // Go back to the contacts list
+                    hideContactDetailsSidebar(); // Hide sidebar when going back
                 });
+
+                // Add event listener to the chat header for contact details
+                chatHeaderElement.addEventListener('click', (event) => {
+                    // Ensure click is not on the back button
+                    if (!event.target.closest('.back-button')) {
+                        showContactDetailsSidebar(contactId);
+                    }
+                });
+
 
                 // Afficher les messages existants
                 contact.messages.forEach(msg => {
@@ -1853,6 +1993,7 @@
                 });
 
                 toggleChatView(true); // Activate chat view on mobile
+                hideContactDetailsSidebar(); // Ensure sidebar is hidden when a new chat opens
                 console.log('Fenêtre de chat affichée pour le contact:', contact.name);
             }
 
@@ -1993,6 +2134,7 @@
                     <div id="groupsManagementList" class="list-group">
                         </div>
                 `;
+                hideContactDetailsSidebar(); // Ensure sidebar is hidden when rendering group management
 
                 const newGroupNameInput = document.getElementById('newGroupNameInput');
                 const createGroupBtn = document.getElementById('createGroupBtn');
@@ -2187,8 +2329,13 @@
                                 <p>Les conversations de groupe s'afficheront ici.</p>
                             </div>
                         </div>
+                        <div class="contact-details-sidebar" id="contactDetailsSidebar">
+                            </div>
                     </div>
                 `;
+                // Get the sidebar element once DOM is loaded for the chat view
+                contactDetailsSidebar = document.getElementById('contactDetailsSidebar');
+                hideContactDetailsSidebar(); // Ensure it's hidden initially for this view
 
                 const groupChatsListElement = document.getElementById('groupChatsList');
                 if (Object.keys(groupsData).length === 0) {
@@ -2241,7 +2388,7 @@
                 }
 
                 chatWindowElement.innerHTML = `
-                    <div class="chat-header">
+                    <div class="chat-header" id="chatHeader">
                         <button class="back-button" id="backToGroupListBtn"><i class="fas fa-arrow-left"></i></button>
                         <img src="https://placehold.co/50x50/0084ff/ffffff?text=${group.name.charAt(0).toUpperCase()}" alt="Groupe ${group.name}" style="border-radius: 50%; object-fit: cover; margin-right: 15px;">
                         <h5>${group.name}
@@ -2260,10 +2407,21 @@
                 const messageInput = document.getElementById('messageInput');
                 const sendMessageBtn = document.getElementById('sendMessageBtn');
                 const backToGroupListBtn = document.getElementById('backToGroupListBtn');
+                const chatHeaderElement = document.getElementById('chatHeader');
 
                 backToGroupListBtn.addEventListener('click', () => {
                     renderGroupChatList(); // Go back to the group list
+                    hideContactDetailsSidebar(); // Hide sidebar when going back
                 });
+
+                // Add event listener to the chat header for group details
+                chatHeaderElement.addEventListener('click', (event) => {
+                    // Ensure click is not on the back button
+                    if (!event.target.closest('.back-button')) {
+                        showGroupDetailsSidebar(groupId);
+                    }
+                });
+
 
                 // Afficher les messages existants du groupe
                 group.messages.forEach(msg => {
@@ -2284,6 +2442,7 @@
                     }
                 });
                 toggleChatView(true); // Activate chat view on mobile
+                hideContactDetailsSidebar(); // Ensure sidebar is hidden when a new group chat opens
                 console.log('Fenêtre de chat affichée pour le groupe:', group.name);
             }
 
@@ -2357,15 +2516,16 @@
                         </form>
                     </div>
                 `;
-                loadProfileData(); // Load existing profile data
+                loadProfileDataAndPopulateForm(); // Load existing profile data and populate form
                 attachProfileListeners(); // Attach event listeners for the profile page
+                hideContactDetailsSidebar(); // Ensure sidebar is hidden when rendering profile page
                 console.log('Page de profil affichée.');
             }
 
             /**
              * Loads user profile data from localStorage and populates the form.
              */
-            function loadProfileData() {
+            function loadProfileDataAndPopulateForm() {
                 const profileData = JSON.parse(localStorage.getItem('userProfile')) || {
                     name: 'Utilisateur JJ-Commerce',
                     email: 'utilisateur@jjcommerce.com',
@@ -2375,7 +2535,7 @@
                 document.getElementById('profileName').value = profileData.name;
                 document.getElementById('profileEmail').value = profileData.email;
                 document.getElementById('profileAvatar').src = profileData.avatar;
-                console.log('Données de profil chargées:', profileData);
+                console.log('Données de profil chargées et formulaire rempli:', profileData);
             }
 
             /**
@@ -2401,6 +2561,7 @@
                 localStorage.setItem('userProfile', JSON.stringify(updatedProfile));
                 showToast('Profil enregistré avec succès !', 'success');
                 console.log('Profil enregistré:', updatedProfile);
+                updateHeaderProfile(); // Update header after saving profile
             }
 
             /**
@@ -2421,6 +2582,144 @@
                         console.log('Nouvel avatar sélectionné.');
                     };
                     reader.readAsDataURL(file); // Reads the file as a Base64 string
+                }
+            }
+
+            /**
+             * Updates the profile picture and username in the header.
+             */
+            function updateHeaderProfile() {
+                const profileData = JSON.parse(localStorage.getItem('userProfile')) || {
+                    name: 'Utilisateur JJ-Commerce',
+                    email: 'utilisateur@jjcommerce.com',
+                    avatar: 'https://placehold.co/120x120/cccccc/ffffff?text=Avatar'
+                };
+
+                const headerProfileAvatar = document.getElementById('headerProfileAvatar');
+                const headerUsername = document.getElementById('headerUsername');
+
+                if (headerProfileAvatar) {
+                    headerProfileAvatar.src = profileData.avatar;
+                    // Fallback for broken images
+                    headerProfileAvatar.onerror = function() {
+                        this.onerror=null;
+                        this.src='https://placehold.co/30x30/cccccc/ffffff?text=U';
+                    };
+                }
+                if (headerUsername) {
+                    headerUsername.textContent = profileData.name;
+                }
+                console.log('En-tête du profil mis à jour.');
+            }
+
+            /**
+             * Affiche la barre latérale des détails du contact.
+             * @param {string} contactId - L'ID du contact à afficher les détails.
+             */
+            function showContactDetailsSidebar(contactId) {
+                const contact = contactsData[contactId];
+                if (!contact) {
+                    console.error('Contact non trouvé pour la barre latérale des détails:', contactId);
+                    return;
+                }
+
+                if (!contactDetailsSidebar) {
+                    console.error('L\'élément contactDetailsSidebar n\'est pas trouvé.');
+                    return;
+                }
+
+                contactDetailsSidebar.innerHTML = `
+                    <div class="header">
+                        <button class="close-btn" id="closeContactDetailsBtn"><i class="fas fa-times"></i></button>
+                    </div>
+                    <div class="text-center">
+                        <img src="${contact.avatar}" alt="${contact.name}" class="avatar" onerror="this.onerror=null;this.src='https://placehold.co/100x100/0084ff/ffffff?text=${contact.name.charAt(0)}'">
+                        <h5>${contact.name}</h5>
+                        <p class="status">${contact.status === 'online' ? 'En ligne' : 'Hors ligne'}</p>
+                    </div>
+                    <div class="info-item">
+                        <i class="fas fa-comment-dots"></i> <strong>Dernier message:</strong> ${truncateText(contact.lastMessage, 60)}
+                    </div>
+                    ${contact.isAI ? `
+                    <div class="info-item">
+                        <i class="fas fa-robot"></i> <strong>Type:</strong> Intelligence Artificielle
+                    </div>
+                    ` : ''}
+                    <div class="info-item">
+                        <i class="fas fa-info-circle"></i> <strong>ID:</strong> ${contactId}
+                    </div>
+                    `;
+
+                contactDetailsSidebar.classList.add('active');
+                document.querySelector('.contacts-layout').classList.add('sidebar-active'); // Add class to parent to adjust layout
+
+                document.getElementById('closeContactDetailsBtn').addEventListener('click', hideContactDetailsSidebar);
+                console.log('Barre latérale des détails du contact affichée pour:', contact.name);
+            }
+
+            /**
+             * Affiche la barre latérale des détails du groupe.
+             * @param {string} groupId - L'ID du groupe à afficher les détails.
+             */
+            function showGroupDetailsSidebar(groupId) {
+                const group = groupsData[groupId];
+                if (!group) {
+                    console.error('Groupe non trouvé pour la barre latérale des détails:', groupId);
+                    return;
+                }
+
+                if (!contactDetailsSidebar) {
+                    console.error('L\'élément contactDetailsSidebar n\'est pas trouvé.');
+                    return;
+                }
+
+                const memberListHtml = group.members.map(memberId => {
+                    const member = contactsData[memberId];
+                    return member ? `
+                        <li class="list-group-item d-flex align-items-center">
+                            <img src="${member.thumbnail}" alt="${member.name}" class="rounded-circle me-2" style="width: 30px; height: 30px; object-fit: cover;" onerror="this.onerror=null;this.src='https://placehold.co/30x30/cccccc/ffffff?text=${member.name.charAt(0)}'">
+                            ${member.name}
+                            <span class="status-dot ${member.status === 'offline' ? 'offline' : ''} ms-auto"></span>
+                        </li>
+                    ` : '';
+                }).join('');
+
+                contactDetailsSidebar.innerHTML = `
+                    <div class="header">
+                        <button class="close-btn" id="closeContactDetailsBtn"><i class="fas fa-times"></i></button>
+                    </div>
+                    <div class="text-center">
+                        <img src="https://placehold.co/100x100/0084ff/ffffff?text=${group.name.charAt(0).toUpperCase()}" alt="Groupe ${group.name}" class="avatar">
+                        <h5>${group.name}</h5>
+                        <p class="status">${group.members.length} membres</p>
+                    </div>
+                    <div class="info-item">
+                        <i class="fas fa-info-circle"></i> <strong>ID du groupe:</strong> ${groupId}
+                    </div>
+                    <div class="info-item">
+                        <strong>Membres:</strong>
+                        <ul class="list-group list-group-flush mt-2">
+                            ${memberListHtml || '<li class="list-group-item text-muted">Aucun membre</li>'}
+                        </ul>
+                    </div>
+                `;
+
+                contactDetailsSidebar.classList.add('active');
+                document.querySelector('.contacts-layout').classList.add('sidebar-active');
+
+                document.getElementById('closeContactDetailsBtn').addEventListener('click', hideContactDetailsSidebar);
+                console.log('Barre latérale des détails du groupe affichée pour:', group.name);
+            }
+
+
+            /**
+             * Cache la barre latérale des détails du contact.
+             */
+            function hideContactDetailsSidebar() {
+                if (contactDetailsSidebar) {
+                    contactDetailsSidebar.classList.remove('active');
+                    document.querySelector('.contacts-layout').classList.remove('sidebar-active');
+                    console.log('Barre latérale des détails du contact cachée.');
                 }
             }
 
@@ -2487,6 +2786,7 @@
                     e.preventDefault();
                     console.log('Sidebar: Favoris cliqué.');
                     appContent.innerHTML = `<h2 class="text-center mt-5">Section Favoris (à implémenter)</h2><p class="text-center">Vos produits favoris seront affichés ici.</p>`;
+                    hideContactDetailsSidebar(); // Ensure sidebar is hidden
                 });
             }
             if (sidebarGroupChatsLink) {
@@ -2518,6 +2818,30 @@
                 });
             }
 
+            // Make the header profile display clickable
+            const headerProfileLink = document.getElementById('headerProfileLink');
+            if (headerProfileLink) {
+                headerProfileLink.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    renderProfilePage();
+                });
+            }
+
+            // Mobile profile link
+            const mobileProfileLink = document.getElementById('mobileProfileLink');
+            if (mobileProfileLink) {
+                mobileProfileLink.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    renderProfilePage();
+                    // Close navbar on mobile after clicking link
+                    const navbarCollapse = document.getElementById('navbarNav');
+                    const bsCollapse = bootstrap.Collapse.getInstance(navbarCollapse);
+                    if (bsCollapse) {
+                        bsCollapse.hide();
+                    }
+                });
+            }
+
 
             // Écouteur pour la recherche instantanée (desktop)
             searchInput.addEventListener('keyup', (e) => {
@@ -2532,6 +2856,7 @@
             // --- Initialisation de l'application ---
             updateCartCount(); // Met à jour le compteur du panier au chargement
             renderProducts(); // Charge les produits et affiche la page d'accueil au démarrage
+            updateHeaderProfile(); // Call new function to update header profile
             console.log('Application JJ-Commerce initialisée.');
         });
     </script>
