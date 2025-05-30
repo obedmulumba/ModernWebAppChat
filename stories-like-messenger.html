@@ -1,0 +1,842 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mon Application Stories</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom scrollbar for better aesthetics */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        .dark ::-webkit-scrollbar-track {
+            background: #333;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 10px;
+        }
+        .dark ::-webkit-scrollbar-thumb {
+            background: #555;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+        .dark ::-webkit-scrollbar-thumb:hover {
+            background: #777;
+        }
+
+        /* Basic transition for theme changes */
+        body {
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        /* Style for the file input button */
+        .custom-file-input::-webkit-file-upload-button {
+            visibility: hidden;
+        }
+        .custom-file-input::before {
+            content: 'Choisir une image';
+            display: inline-block;
+            background: linear-gradient(to right, #6366f1, #8b5cf6); /* Purple gradient */
+            color: white;
+            border-radius: 0.5rem; /* rounded-lg */
+            padding: 0.75rem 1.5rem; /* py-3 px-6 */
+            outline: none;
+            white-space: nowrap;
+            cursor: pointer;
+            font-weight: 600; /* font-semibold */
+            border: none;
+            transition: all 0.2s ease-in-out;
+        }
+        .custom-file-input:hover::before {
+            background: linear-gradient(to right, #4f46e5, #7c3aed); /* Darker gradient on hover */
+            transform: translateY(-1px);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+        .custom-file-input:active::before {
+            transform: translateY(0);
+            box-shadow: none;
+        }
+
+        /* Story avatar border for active stories */
+        .story-avatar-border {
+            border: 3px solid #8b5cf6; /* Purple border */
+            padding: 2px; /* Space between border and image */
+            border-radius: 9999px; /* Full circle */
+            transition: border-color 0.2s ease-in-out;
+        }
+        .dark .story-avatar-border {
+            border-color: #a78bfa; /* Lighter purple in dark mode */
+        }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-900 dark:bg-gray-900 dark:text-gray-100 min-h-screen flex flex-col items-center justify-center transition-colors duration-300 font-sans">
+
+    <div class="w-full max-w-md mx-auto bg-white dark:bg-gray-800 shadow-xl rounded-2xl overflow-hidden my-8 md:my-12 flex flex-col h-[90vh] md:h-[80vh]">
+
+        <header class="bg-gradient-to-r from-blue-500 to-purple-600 dark:from-blue-700 dark:to-purple-800 p-4 text-white flex items-center justify-between shadow-md">
+            <h1 class="text-2xl font-bold">Mon Application Stories</h1>
+            <div class="flex items-center space-x-4">
+                <button id="stories-nav-button" class="py-2 px-4 rounded-full bg-white bg-opacity-20 hover:bg-opacity-30 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50 font-semibold">
+                    Stories
+                </button>
+                <button id="feed-nav-button" class="py-2 px-4 rounded-full bg-white bg-opacity-10 hover:bg-opacity-20 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50">
+                    Fil d'actualité
+                </button>
+                <button id="theme-toggle" class="p-2 rounded-full bg-white bg-opacity-20 hover:bg-opacity-30 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50">
+                    <svg id="sun-icon" class="w-6 h-6 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h1M3 12h1m15.325-7.757l-.707-.707M4.343 19.657l-.707-.707m14.324 0l-.707.707M4.343 4.343l-.707.707"></path></svg>
+                    <svg id="moon-icon" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+                </button>
+            </div>
+        </header>
+
+        <div id="story-reels-page" class="h-full flex flex-col">
+            <div class="p-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700">
+                <h2 class="text-xl font-bold text-gray-800 dark:text-gray-100 mb-4">Ajouter une Story</h2>
+                <div class="mb-4">
+                    <label for="image-input" class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Image</label>
+                    <input type="file" id="image-input" accept="image/*" class="w-full text-gray-700 dark:text-gray-300 custom-file-input">
+                </div>
+                <div class="mb-4">
+                    <label for="story-text-input" class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Texte (optionnel)</label>
+                    <textarea id="story-text-input" rows="3" class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-600 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-300 resize-none"></textarea>
+                </div>
+                <button id="add-story-button" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-lg transition-all duration-200 shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50">
+                    Ajouter la Story
+                </button>
+            </div>
+
+            <div class="p-4 overflow-x-auto whitespace-nowrap border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700">
+                <div id="story-reels-container" class="flex items-center space-x-4 pb-2">
+                    <div id="no-story-reels-message" class="text-center text-gray-500 dark:text-gray-400 w-full hidden">
+                        Aucune story à afficher.
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex-1 p-4 overflow-y-auto">
+                <p class="text-center text-gray-500 dark:text-gray-400 mt-8">
+                    Cliquez sur un avatar ci-dessus pour voir les stories.
+                </p>
+            </div>
+        </div>
+
+        <div id="feed-page" class="h-full flex flex-col hidden">
+            <div class="p-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700">
+                <h2 class="text-xl font-bold text-gray-800 dark:text-gray-100">Fil d'actualité des Stories</h2>
+            </div>
+            <div id="feed-container" class="flex-1 p-4 overflow-y-auto space-y-4">
+                <p id="no-feed-stories-message" class="text-center text-gray-500 dark:text-gray-400 mt-8 hidden">
+                    Aucune story dans le fil d'actualité.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div id="story-viewer-modal" class="fixed inset-0 bg-black flex items-center justify-center z-50 hidden">
+        <button id="close-viewer-button" class="absolute top-4 right-4 text-white hover:text-gray-300 transition-colors duration-200 z-10">
+            <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+        </button>
+
+        <div class="absolute top-4 left-4 flex items-center space-x-3 z-10">
+            <img id="viewer-user-avatar" src="" alt="User Avatar" class="w-12 h-12 rounded-full object-cover border-2 border-white">
+            <span id="viewer-user-name" class="text-white font-semibold text-lg"></span>
+        </div>
+
+        <button id="prev-story-button" class="absolute left-4 p-3 rounded-full bg-white bg-opacity-20 hover:bg-opacity-30 text-white z-10">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+        </button>
+        <button id="next-story-button" class="absolute right-4 p-3 rounded-full bg-white bg-opacity-20 hover:bg-opacity-30 text-white z-10">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+        </button>
+
+        <img id="viewer-image" src="" alt="Story Content" class="max-w-full max-h-full object-contain">
+        <p id="viewer-text" class="absolute bottom-10 left-1/2 -translate-x-1/2 text-white text-xl font-medium text-center p-4 bg-black bg-opacity-50 rounded-lg max-w-[90%]"></p>
+    </div>
+
+    <div id="message-box" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-[100] hidden">
+        <div class="bg-white dark:bg-gray-700 rounded-lg shadow-xl p-6 max-w-sm w-full text-center">
+            <p id="message-box-text" class="text-gray-800 dark:text-gray-100 text-lg mb-4"></p>
+            <button id="message-box-ok-button" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-200">OK</button>
+        </div>
+    </div>
+
+    <div id="confirm-box" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-[100] hidden">
+        <div class="bg-white dark:bg-gray-700 rounded-lg shadow-xl p-6 max-w-sm w-full text-center">
+            <p id="confirm-box-text" class="text-gray-800 dark:text-gray-100 text-lg mb-4"></p>
+            <div class="flex justify-center space-x-4">
+                <button id="confirm-box-yes-button" class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-200">Oui</button>
+                <button id="confirm-box-no-button" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-lg transition-colors duration-200">Non</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // DOM Elements
+        const themeToggle = document.getElementById('theme-toggle');
+        const sunIcon = document.getElementById('sun-icon');
+        const moonIcon = document.getElementById('moon-icon');
+        const imageInput = document.getElementById('image-input');
+        const storyTextInput = document.getElementById('story-text-input');
+        const addStoryButton = document.getElementById('add-story-button');
+
+        // Navigation elements
+        const storiesNavButton = document.getElementById('stories-nav-button');
+        const feedNavButton = document.getElementById('feed-nav-button');
+        const storyReelsPage = document.getElementById('story-reels-page');
+        const feedPage = document.getElementById('feed-page');
+        const storyReelsContainer = document.getElementById('story-reels-container');
+        const noStoryReelsMessage = document.getElementById('no-story-reels-message');
+        const feedContainer = document.getElementById('feed-container');
+        const noFeedStoriesMessage = document.getElementById('no-feed-stories-message');
+
+        // Full-screen story viewer elements
+        const storyViewerModal = document.getElementById('story-viewer-modal');
+        const closeViewerButton = document.getElementById('close-viewer-button');
+        const viewerUserAvatar = document.getElementById('viewer-user-avatar');
+        const viewerUserName = document.getElementById('viewer-user-name');
+        const prevStoryButton = document.getElementById('prev-story-button');
+        const nextStoryButton = document.getElementById('next-story-button');
+        const viewerImage = document.getElementById('viewer-image');
+        const viewerText = document.getElementById('viewer-text');
+
+        // Custom Message Box and Confirm Box elements
+        const messageBox = document.getElementById('message-box');
+        const messageBoxText = document.getElementById('message-box-text');
+        const messageBoxOkButton = document.getElementById('message-box-ok-button');
+
+        const confirmBox = document.getElementById('confirm-box');
+        const confirmBoxText = document.getElementById('confirm-box-text');
+        const confirmBoxYesButton = document.getElementById('confirm-box-yes-button');
+        const confirmBoxNoButton = document.getElementById('confirm-box-no-button');
+        let confirmCallback = null; // Global variable to store the callback for confirmation
+
+        // Initialize stories array from localStorage or empty array
+        let myStories = JSON.parse(localStorage.getItem('myStories')) || [];
+        // Initialize theme from localStorage or default to 'light'
+        let currentTheme = localStorage.getItem('theme') || 'light';
+
+        // Current story being viewed in the modal
+        let currentViewingUserId = null;
+        let currentViewingStoryIndex = 0;
+        let currentStoriesList = []; // The list of stories for the current user being viewed
+
+        // Other Users Data (provided by the user)
+        const otherUsersData = {
+            "SharonRoseIA": {
+                name: "Sharon Rose IA",
+                avatar: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcST5rQlP8qzJSM7RbZlWnDILzTJWTHptxZh2Q&s",
+                thumbnail: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQvLBpSw3kWG6SFC5mQuTyMezAz0pBBzXTvYg&s",
+                status: "online",
+                lastMessage: "Posez-moi une question !",
+                isAI: true,
+                about: "Je suis un Api d'un grand modèle linguistique, entraîné par Google.",
+                contact: "https://gemini.google.com/"
+            },
+            "johnDoe": {
+                name: "Galilée Doe",
+                avatar: "https://randomuser.me/api/portraits/men/50.jpg",
+                thumbnail: "https://randomuser.me/api/portraits/thumb/men/60.jpg",
+                status: "online",
+                lastMessage: "Hey, comment vas-tu ?",
+                about: "Bonjour ! Je suis Galilée et j'adore coder et explorer les nouvelles technologies.",
+                contact: "+243 823 456 789<br>john.doe@example.com"
+            },
+            "aliceSmith": {
+                name: "Alice Team",
+                avatar: "https://randomuser.me/api/portraits/women/60.jpg",
+                thumbnail: "https://randomuser.me/api/portraits/thumb/women/30.jpg",
+                status: "offline",
+                lastMessage: "Can we meet tomorrow?",
+                about: "Coordinatrice de projet passionnée par le travail d'équipe et l'innovation.",
+                contact: "+243 812 345 678<br>alice.smith@example.com"
+            },
+            "bobJohnson": {
+                name: "Bob Johnson",
+                avatar: "https://randomuser.me/api/portraits/men/66.jpg",
+                thumbnail: "https://randomuser.me/api/portraits/thumb/men/66.jpg",
+                status: "online",
+                lastMessage: "Ça marche !",
+                about: "Développeur full-stack, toujours prêt pour de nouveaux défis techniques.",
+                contact: "+243 890 123 456<br>bob.johnson@example.com"
+            },
+            "elodieManiema": {
+                name: "Élodie Mbombo",
+                avatar: "https://randomuser.me/api/portraits/women/62.jpg",
+                thumbnail: "https://randomuser.me/api/portraits/thumb/women/62.jpg",
+                status: "online",
+                lastMessage: "Le projet avance bien, on a eu le feu vert pour la phase 2 !",
+                about: "Coordinatrice de projets humanitaires, dédiée au développement et à l'accès à l'énergie en RDC.",
+                contact: "+243 899 123 456<br>elodie.mbombo@ngo.org"
+            },
+            "patrickKivu": {
+                name: "Patrick Kabongo",
+                avatar: "https://randomuser.me/api/portraits/men/63.jpg",
+                thumbnail: "https://randomuser.me/api/portraits/thumb/men/63.jpg",
+                status: "offline",
+                lastMessage: "Tu as vu les derniers défis TikTok sur la danse congolaise ?",
+                about: "Influenceur et créateur de contenu passionné par la culture congolaise et les tendances virales.",
+                contact: "+243 811 223 344<br>patrick.kabongo@social.com"
+            },
+            "graciaKin": {
+                name: "Gracia Ngalula",
+                avatar: "https://randomuser.me/api/portraits/women/69.jpg",
+                thumbnail: "https://randomuser.me/api/portraits/thumb/women/69.jpg",
+                status: "online",
+                lastMessage: "La commande de pagnes est prête pour l'expédition.",
+                about: "Artisan-designer de textiles africains, spécialisée dans les pagnes traditionnels et modernes.",
+                contact: "+243 977 889 001<br>gracia.ngalula@textiles.cd"
+            },
+            "cedricLubum": {
+                name: "Cédric Tshibangu",
+                avatar: "https://randomuser.me/api/portraits/men/65.jpg",
+                thumbnail: "https://randomuser.me/api/portraits/thumb/men/65.jpg",
+                status: "online",
+                lastMessage: "La séance de coaching a été très enrichissante.",
+                about: "Coach en développement personnel et professionnel, aide les jeunes entrepreneurs en RDC.",
+                contact: "+243 852 369 147<br>cedric.tshibangu@coaching.cd"
+            },
+            "christelleKasai": {
+                name: "Christelle Mpiana",
+                avatar: "https://randomuser.me/api/portraits/women/99.jpg",
+                thumbnail: "https://randomuser.me/api/portraits/thumb/women/99.jpg",
+                status: "offline",
+                lastMessage: "On se voit au marché central pour la livraison des vivres ?",
+                about: "Bénévole active dans plusieurs associations caritatives, très impliquée dans sa communauté.",
+                contact: "+243 841 597 263<br>christelle.mpiana@charity.org"
+            },
+            "dadiKongo": {
+                name: "Dadi Mputu",
+                avatar: "https://randomuser.me/api/portraits/men/65.jpg",
+                thumbnail: "https://randomuser.me/api/portraits/thumb/men/65.jpg",
+                status: "online",
+                lastMessage: "Les résultats du match de l'AS V.Club sont tombés !",
+                about: "Fan inconditionnel de football congolais et commentateur sportif amateur sur les réseaux sociaux.",
+                contact: "+243 833 777 999<br>dadi.mputu@sports.cd"
+            },
+            "giselleNord": {
+                name: "Gisèle Bakonga",
+                avatar: "https://randomuser.me/api/portraits/women/33.jpg",
+                thumbnail: "https://randomuser.me/api/portraits/thumb/women/33.jpg",
+                status: "online",
+                lastMessage: "La présentation pour les investisseurs est prête.",
+                about: "Consultante en finance et entrepreneuriat, accompagne les startups congolaises dans leur recherche de financement.",
+                contact: "+243 810 500 600<br>giselle.bakonga@consulting.cd"
+            },
+            "jeromeSud": {
+                name: "Jérôme Lusamba",
+                avatar: "https://randomuser.me/api/portraits/men/21.jpg",
+                thumbnail: "https://randomuser.me/api/portraits/thumb/men/21.jpg",
+                status: "offline",
+                lastMessage: "La récolte de manioc a été exceptionnelle cette saison.",
+                about: "Agriculteur et leader communautaire, œuvrant pour la sécurité alimentaire.",
+                contact: "+243 822 444 666<br>jerome.lusamba@agriculture.cd"
+            },
+            "nadineKatanga": {
+                name: "Nadine Tshilombo",
+                avatar: "https://randomuser.me/api/portraits/women/70.jpg",
+                thumbnail: "https://randomuser.me/api/portraits/thumb/women/70.jpg",
+                status: "online",
+                lastMessage: "Le nouveau single de Fally Ipupa est une bombe !",
+                about: "Passionnée de musique congolaise, toujours à l'affût des dernières sorties et des tendances afro-urbaines.",
+                contact: "+243 815 900 123<br>nadine.tshilombo@musicfan.cd"
+            },
+            "olivierOrientale": {
+                name: "Olivier Kalala",
+                avatar: "https://randomuser.me/api/portraits/men/82.jpg",
+                thumbnail: "https://randomuser.me/api/portraits/thumb/men/82.jpg",
+                status: "offline",
+                lastMessage: "J'ai besoin de ton avis sur la nouvelle stratégie digitale.",
+                about: "Expert en marketing digital et communication, aide les entreprises congolaises à se digitaliser.",
+                contact: "+243 820 000 333<br>olivier.kalala@digital.cd"
+            }
+        };
+
+        // Combined stories data structure, grouped by user ID
+        // 'me' will be the key for the current user's stories
+        let allStoriesByUser = {
+            'me': []
+        };
+
+        const CURRENT_USER_ID = 'me';
+        const CURRENT_USER_NAME = 'Moi';
+        const CURRENT_USER_AVATAR = 'https://placehold.co/96x96/6366f1/ffffff?text=Moi'; // Placeholder for current user avatar
+
+        /**
+         * Affiche une boîte de message personnalisée.
+         * @param {string} message - Le message à afficher.
+         */
+        function showMessageBox(message) {
+            messageBoxText.textContent = message;
+            messageBox.classList.remove('hidden');
+        }
+
+        /**
+         * Gère le clic sur le bouton "OK" de la boîte de message.
+         */
+        messageBoxOkButton.addEventListener('click', () => {
+            messageBox.classList.add('hidden');
+        });
+
+        /**
+         * Affiche une boîte de confirmation personnalisée.
+         * @param {string} message - Le message de confirmation à afficher.
+         * @param {function} callback - La fonction de rappel à exécuter après la confirmation (prend un booléen en argument).
+         */
+        function showConfirmBox(message, callback) {
+            confirmBoxText.textContent = message;
+            confirmBox.classList.remove('hidden');
+            confirmCallback = callback;
+        }
+
+        /**
+         * Gère le clic sur le bouton "Oui" de la boîte de confirmation.
+         */
+        confirmBoxYesButton.addEventListener('click', () => {
+            confirmBox.classList.add('hidden');
+            if (confirmCallback) {
+                confirmCallback(true);
+                confirmCallback = null;
+            }
+        });
+
+        /**
+         * Gère le clic sur le bouton "Non" de la boîte de confirmation.
+         */
+        confirmBoxNoButton.addEventListener('click', () => {
+            confirmBox.classList.add('hidden');
+            if (confirmCallback) {
+                confirmCallback(false);
+                confirmCallback = null;
+            }
+        });
+
+        /**
+         * Applique le thème sélectionné (clair ou sombre) au document.
+         * @param {string} theme - Le thème à appliquer ('light' ou 'dark').
+         */
+        function applyTheme(theme) {
+            if (theme === 'dark') {
+                document.documentElement.classList.add('dark');
+                sunIcon.classList.remove('hidden');
+                moonIcon.classList.add('hidden');
+            } else {
+                document.documentElement.classList.remove('dark');
+                sunIcon.classList.add('hidden');
+                moonIcon.classList.remove('hidden');
+            }
+            localStorage.setItem('theme', theme);
+        }
+
+        /**
+         * Génère des stories fictives pour un utilisateur donné.
+         * @param {object} user - L'objet utilisateur de `otherUsersData`.
+         * @returns {Array<object>} Un tableau d'objets story simulés.
+         */
+        function generateDummyStoriesForUser(user) {
+            const stories = [];
+            const baseTimestamp = Date.now();
+            const texts = [
+                user.lastMessage || "Nouvelle story !",
+                "Un moment partagé.",
+                "Aujourd'hui, c'était ça !",
+                "Pensées du jour.",
+                "Petit aperçu de ma journée."
+            ];
+
+            // Génère 1 à 3 stories par utilisateur
+            const numStories = Math.floor(Math.random() * 3) + 1;
+            for (let i = 0; i < numStories; i++) {
+                stories.push({
+                    id: `${user.id}-${baseTimestamp}-${i}`,
+                    userId: user.id,
+                    userName: user.name,
+                    userAvatar: user.thumbnail || user.avatar,
+                    image: user.thumbnail || user.avatar, // Utilise l'avatar de l'utilisateur comme image de story
+                    text: texts[Math.floor(Math.random() * texts.length)],
+                    timestamp: new Date(baseTimestamp - (i * 3600 * 1000 * 24)).toISOString() // Simule des heures différentes
+                });
+            }
+            return stories;
+        }
+
+        /**
+         * Initialise les stories des autres utilisateurs et les regroupe.
+         */
+        function initializeOtherUsersStories() {
+            for (const userId in otherUsersData) {
+                if (otherUsersData.hasOwnProperty(userId)) {
+                    const user = otherUsersData[userId];
+                    allStoriesByUser[userId] = generateDummyStoriesForUser(user);
+                }
+            }
+        }
+
+        /**
+         * Affiche la page des "Stories" (les reels horizontaux).
+         */
+        function showStoryReelsPage() {
+            storyReelsPage.classList.remove('hidden');
+            feedPage.classList.add('hidden');
+            storiesNavButton.classList.add('bg-opacity-20', 'font-semibold');
+            storiesNavButton.classList.remove('bg-opacity-10');
+            feedNavButton.classList.remove('bg-opacity-20', 'font-semibold');
+            feedNavButton.classList.add('bg-opacity-10');
+            renderStoryReels();
+        }
+
+        /**
+         * Affiche la page du "Fil d'actualité" (toutes les stories en liste verticale).
+         */
+        function showFeedPage() {
+            feedPage.classList.remove('hidden');
+            storyReelsPage.classList.add('hidden');
+            feedNavButton.classList.add('bg-opacity-20', 'font-semibold');
+            feedNavButton.classList.remove('bg-opacity-10');
+            storiesNavButton.classList.remove('bg-opacity-20', 'font-semibold');
+            storiesNavButton.classList.add('bg-opacity-10');
+            renderFeedStories();
+        }
+
+        /**
+         * Rend les avatars des utilisateurs avec des stories pour la barre de reels horizontale.
+         */
+        function renderStoryReels() {
+            storyReelsContainer.innerHTML = ''; // Clear existing reels
+
+            // Add "My Story" reel first
+            const myStoriesCount = myStories.length;
+            const myStoryReel = document.createElement('div');
+            myStoryReel.className = 'flex-shrink-0 text-center cursor-pointer';
+            myStoryReel.innerHTML = `
+                <div class="w-20 h-20 rounded-full bg-gray-200 dark:bg-gray-600 flex items-center justify-center mx-auto mb-1
+                    ${myStoriesCount > 0 ? 'story-avatar-border' : 'border-2 border-gray-300 dark:border-gray-500'}"
+                    style="background-image: url('${CURRENT_USER_AVATAR}'); background-size: cover; background-position: center;">
+                    ${myStoriesCount === 0 ? `
+                        <svg class="w-10 h-10 text-gray-500 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                    ` : ''}
+                </div>
+                <span class="text-sm text-gray-700 dark:text-gray-200">${CURRENT_USER_NAME}</span>
+            `;
+            myStoryReel.onclick = () => openStoryViewer(CURRENT_USER_ID, 0);
+            storyReelsContainer.appendChild(myStoryReel);
+
+            // Add other users' story reels
+            let hasStories = myStoriesCount > 0;
+            for (const userId in allStoriesByUser) {
+                if (userId !== CURRENT_USER_ID && allStoriesByUser[userId].length > 0) {
+                    hasStories = true;
+                    const user = otherUsersData[userId];
+                    const userStoryReel = document.createElement('div');
+                    userStoryReel.className = 'flex-shrink-0 text-center cursor-pointer';
+                    userStoryReel.innerHTML = `
+                        <div class="w-20 h-20 rounded-full story-avatar-border flex items-center justify-center mx-auto mb-1"
+                            style="background-image: url('${user.thumbnail || user.avatar}'); background-size: cover; background-position: center;">
+                        </div>
+                        <span class="text-sm text-gray-700 dark:text-gray-200">${user.name.split(' ')[0]}</span>
+                    `;
+                    userStoryReel.onclick = () => openStoryViewer(userId, 0);
+                    storyReelsContainer.appendChild(userStoryReel);
+                }
+            }
+
+            if (!hasStories) {
+                noStoryReelsMessage.classList.remove('hidden');
+            } else {
+                noStoryReelsMessage.classList.add('hidden');
+            }
+        }
+
+        /**
+         * Rend toutes les stories (mes stories et celles des autres) dans le fil d'actualité.
+         */
+        function renderFeedStories() {
+            feedContainer.innerHTML = ''; // Clear existing feed
+
+            let allStories = [];
+            // Add my stories to the feed
+            myStories.forEach(story => {
+                allStories.push({
+                    ...story,
+                    userId: CURRENT_USER_ID,
+                    userName: CURRENT_USER_NAME,
+                    userAvatar: CURRENT_USER_AVATAR,
+                    isMine: true
+                });
+            });
+
+            // Add other users' stories to the feed
+            for (const userId in allStoriesByUser) {
+                if (userId !== CURRENT_USER_ID) {
+                    allStoriesByUser[userId].forEach(story => {
+                        allStories.push({
+                            ...story,
+                            isMine: false
+                        });
+                    });
+                }
+            }
+
+            // Sort all stories by timestamp (newest first)
+            allStories.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+            if (allStories.length === 0) {
+                noFeedStoriesMessage.classList.remove('hidden');
+            } else {
+                noFeedStoriesMessage.classList.add('hidden');
+            }
+
+            allStories.forEach(story => {
+                const storyCard = document.createElement('div');
+                storyCard.className = `
+                    bg-white dark:bg-gray-700 p-4 rounded-xl shadow-md flex items-start space-x-4
+                    hover:shadow-lg transition-shadow duration-200 relative
+                `;
+
+                // User Info (Avatar and Name)
+                const userInfoDiv = document.createElement('div');
+                userInfoDiv.className = 'flex-shrink-0';
+                const userAvatar = document.createElement('img');
+                userAvatar.src = story.userAvatar;
+                userAvatar.alt = `Avatar de ${story.userName}`;
+                userAvatar.className = 'w-12 h-12 object-cover rounded-full border-2 border-blue-400 dark:border-purple-400';
+                userInfoDiv.appendChild(userAvatar);
+
+                const storyContent = document.createElement('div');
+                storyContent.className = 'flex-grow';
+
+                const userName = document.createElement('p');
+                userName.className = 'font-semibold text-blue-600 dark:text-purple-400 text-sm mb-1';
+                userName.textContent = story.userName;
+
+                const storyImage = document.createElement('img');
+                storyImage.src = story.image;
+                storyImage.alt = 'Image de Story';
+                storyImage.className = 'w-full h-auto object-cover rounded-lg mb-2 cursor-pointer';
+                storyImage.onclick = () => openStoryViewer(story.userId, allStoriesByUser[story.userId].findIndex(s => s.id === story.id));
+
+                const storyText = document.createElement('p');
+                storyText.className = 'text-gray-800 dark:text-gray-200 text-base mb-1 break-words';
+                storyText.textContent = story.text || 'Pas de texte';
+
+                const storyDate = document.createElement('span');
+                storyDate.className = 'text-gray-500 dark:text-gray-400 text-xs';
+                storyDate.textContent = new Date(story.timestamp).toLocaleString('fr-FR', {
+                    year: 'numeric', month: 'short', day: 'numeric',
+                    hour: '2-digit', minute: '2-digit'
+                });
+
+                storyContent.appendChild(userName);
+                storyContent.appendChild(storyImage);
+                storyContent.appendChild(storyText);
+                storyContent.appendChild(storyDate);
+
+                storyCard.appendChild(userInfoDiv);
+                storyCard.appendChild(storyContent);
+
+                // Add delete button only for my own stories in the feed
+                if (story.isMine) {
+                    const deleteButton = document.createElement('button');
+                    deleteButton.className = `
+                        absolute top-2 right-2 p-1 rounded-full bg-red-500 text-white
+                        hover:bg-red-600 transition-colors duration-200 opacity-80 hover:opacity-100
+                        focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50
+                    `;
+                    deleteButton.innerHTML = `
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                        </svg>
+                    `;
+                    deleteButton.onclick = (event) => {
+                        event.stopPropagation();
+                        deleteStory(story.id);
+                    };
+                    storyCard.appendChild(deleteButton);
+                }
+
+                feedContainer.appendChild(storyCard);
+            });
+        }
+
+        /**
+         * Ajoute une nouvelle story basée sur l'entrée de l'utilisateur.
+         * Lit l'image comme une chaîne Base64 et l'enregistre avec le texte et l'horodatage.
+         */
+        addStoryButton.addEventListener('click', () => {
+            const imageFile = imageInput.files[0];
+            const storyText = storyTextInput.value.trim();
+
+            if (!imageFile && !storyText) {
+                showMessageBox("Veuillez ajouter une image ou du texte pour votre story.");
+                return;
+            }
+
+            if (imageFile) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const newStory = {
+                        id: Date.now(), // Unique ID for the story
+                        image: e.target.result, // Base64 image data
+                        text: storyText,
+                        timestamp: new Date().toISOString(),
+                        userId: CURRENT_USER_ID, // Added for consistency
+                        userName: CURRENT_USER_NAME, // Added for consistency
+                        userAvatar: CURRENT_USER_AVATAR // Added for consistency
+                    };
+                    myStories.unshift(newStory); // Add to the beginning of the array
+                    localStorage.setItem('myStories', JSON.stringify(myStories));
+                    allStoriesByUser[CURRENT_USER_ID] = myStories; // Update the grouped data
+                    renderStoryReels(); // Re-render reels
+                    if (!feedPage.classList.contains('hidden')) { // If feed page is active, re-render it too
+                        renderFeedStories();
+                    }
+                    // Clear inputs
+                    imageInput.value = '';
+                    storyTextInput.value = '';
+                };
+                reader.readAsDataURL(imageFile);
+            } else {
+                // If no image, just add text story
+                const newStory = {
+                    id: Date.now(),
+                    image: 'https://placehold.co/96x96/cccccc/333333?text=No+Image', // Placeholder for text-only stories
+                    text: storyText,
+                    timestamp: new Date().toISOString(),
+                    userId: CURRENT_USER_ID, // Added for consistency
+                    userName: CURRENT_USER_NAME, // Added for consistency
+                    userAvatar: CURRENT_USER_AVATAR // Added for consistency
+                };
+                myStories.unshift(newStory);
+                localStorage.setItem('myStories', JSON.stringify(myStories));
+                allStoriesByUser[CURRENT_USER_ID] = myStories;
+                renderStoryReels();
+                if (!feedPage.classList.contains('hidden')) {
+                    renderFeedStories();
+                }
+                storyTextInput.value = '';
+            }
+        });
+
+        /**
+         * Ouvre le visualiseur de story en plein écran pour un utilisateur et une story donnés.
+         * @param {string} userId - L'ID de l'utilisateur dont les stories doivent être affichées.
+         * @param {number} startIndex - L'index de la story à afficher en premier.
+         */
+        function openStoryViewer(userId, startIndex) {
+            currentViewingUserId = userId;
+            currentStoriesList = allStoriesByUser[userId] || [];
+
+            if (currentStoriesList.length === 0) {
+                showMessageBox("Cet utilisateur n'a pas de stories à afficher.");
+                return;
+            }
+
+            currentViewingStoryIndex = startIndex;
+            updateStoryViewer();
+            storyViewerModal.classList.remove('hidden');
+        }
+
+        /**
+         * Met à jour le contenu du visualiseur de story en fonction de l'index actuel.
+         */
+        function updateStoryViewer() {
+            const story = currentStoriesList[currentViewingStoryIndex];
+            if (!story) {
+                // This should not happen if currentStoriesList is correctly managed
+                closeStoryViewer();
+                return;
+            }
+
+            viewerImage.src = story.image;
+            viewerText.textContent = story.text || '';
+
+            // Directly use properties from the story object, which are now guaranteed to exist
+            viewerUserAvatar.src = story.userAvatar;
+            viewerUserName.textContent = story.userName;
+
+            // Show/hide navigation buttons
+            prevStoryButton.classList.toggle('hidden', currentViewingStoryIndex === 0);
+            nextStoryButton.classList.toggle('hidden', currentViewingStoryIndex === currentStoriesList.length - 1);
+        }
+
+        /**
+         * Navigue à la story précédente dans le visualiseur.
+         */
+        prevStoryButton.addEventListener('click', () => {
+            if (currentViewingStoryIndex > 0) {
+                currentViewingStoryIndex--;
+                updateStoryViewer();
+            }
+        });
+
+        /**
+         * Navigue à la story suivante dans le visualiseur.
+         */
+        nextStoryButton.addEventListener('click', () => {
+            if (currentViewingStoryIndex < currentStoriesList.length - 1) {
+                currentViewingStoryIndex++;
+                updateStoryViewer();
+            }
+        });
+
+        /**
+         * Ferme le visualiseur de story en plein écran.
+         */
+        function closeStoryViewer() {
+            storyViewerModal.classList.add('hidden');
+            currentViewingUserId = null;
+            currentViewingStoryIndex = 0;
+            currentStoriesList = [];
+        }
+
+        closeViewerButton.addEventListener('click', closeStoryViewer);
+
+        // Ferme la modale en cliquant en dehors du contenu (pour le visualiseur)
+        storyViewerModal.addEventListener('click', (event) => {
+            if (event.target === storyViewerModal) {
+                closeStoryViewer();
+            }
+        });
+
+        /**
+         * Supprime une story du tableau et du localStorage.
+         * @param {number} id - L'ID de la story à supprimer.
+         */
+        function deleteStory(id) {
+            showConfirmBox("Êtes-vous sûr de vouloir supprimer cette story ?", (confirmed) => {
+                if (confirmed) {
+                    myStories = myStories.filter(story => story.id !== id);
+                    localStorage.setItem('myStories', JSON.stringify(myStories));
+                    allStoriesByUser[CURRENT_USER_ID] = myStories; // Update grouped data
+                    renderStoryReels(); // Re-render reels
+                    if (!feedPage.classList.contains('hidden')) { // If feed page is active, re-render it too
+                        renderFeedStories();
+                    }
+                }
+            });
+        }
+
+        // Fonctionnalité de bascule de thème
+        themeToggle.addEventListener('click', () => {
+            currentTheme = currentTheme === 'light' ? 'dark' : 'light';
+            applyTheme(currentTheme);
+        });
+
+        // Écouteurs d'événements pour la navigation
+        storiesNavButton.addEventListener('click', showStoryReelsPage);
+        feedNavButton.addEventListener('click', showFeedPage);
+
+        // Configuration initiale au chargement de la page
+        document.addEventListener('DOMContentLoaded', () => {
+            applyTheme(currentTheme); // Applique le thème au chargement
+            initializeOtherUsersStories(); // Génère les stories des autres utilisateurs
+            showStoryReelsPage(); // Affiche la page des reels de stories par défaut
+        });
+    </script>
+</body>
+</html>
