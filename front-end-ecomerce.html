@@ -287,10 +287,6 @@
         }
 
         /* Positionnement de l'icône de recherche */
-        .search-input-group {
-            position: relative;
-        }
-
         .search-input-group .fa-search {
             position: absolute;
             left: 10px;
@@ -398,20 +394,21 @@
         .contacts-layout {
             display: flex;
             width: 100%;
-            height: 100%;
-            min-height: 500px; /* Hauteur minimale pour le conteneur de chat */
+            /* Reduced min-height */
+            min-height: 400px; /* Adjusted for less height */
             border: 1px solid #ddd;
             border-radius: 8px;
             overflow: hidden;
         }
 
         .contacts-list {
-            flex-basis: 30%; /* Largeur de la liste de contacts */
-            max-width: 300px;
+            flex-basis: 30%; /* Keep for larger screens */
+            max-width: 300px; /* Keep for larger screens */
             background-color: #fff;
             border-right: 1px solid #eee;
             overflow-y: auto;
             padding: 10px 0;
+            flex-shrink: 0; /* Prevents shrinking on larger screens */
         }
 
         .contact-item {
@@ -437,6 +434,11 @@
             border-radius: 50%;
             object-fit: cover;
             margin-right: 10px;
+        }
+
+        .contact-info {
+            flex-grow: 1; /* Allows info to take available space */
+            overflow: hidden; /* Ensures content within doesn't overflow */
         }
 
         .contact-info h6 {
@@ -467,6 +469,16 @@
             display: flex;
             align-items: center;
             box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        }
+
+        .chat-header .back-button {
+            display: none; /* Hidden by default on desktop */
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            margin-right: 15px;
+            cursor: pointer;
         }
 
         .chat-header img {
@@ -593,6 +605,99 @@
             margin-right: 10px;
             color: #666;
         }
+
+        /* Mobile specific styles for chat/contacts layout */
+        @media (max-width: 768px) {
+            .contacts-layout {
+                flex-direction: column; /* Stack elements vertically */
+                min-height: unset; /* Remove fixed min-height for mobile */
+                height: 100%; /* Take full available height */
+            }
+
+            .contacts-list {
+                width: 100%;
+                max-width: none; /* Remove max-width */
+                border-right: none;
+                border-bottom: 1px solid #eee;
+                /* Initially visible */
+                display: flex; /* Use flex for contact items */
+                flex-direction: column;
+            }
+
+            .chat-window {
+                width: 100%;
+                min-height: 100%; /* Take full height when active */
+                /* Initially hidden on mobile */
+                display: none;
+            }
+
+            /* When a chat is active on mobile, hide the list and show the chat window */
+            .contacts-layout.chat-active .contacts-list {
+                display: none;
+            }
+
+            .contacts-layout.chat-active .chat-window {
+                display: flex; /* Show the chat window */
+            }
+
+            .chat-header .back-button {
+                display: block; /* Show back button on mobile chat header */
+            }
+        }
+
+        /* Ensure back button is hidden on desktop */
+        @media (min-width: 769px) {
+            .chat-header .back-button {
+                display: none;
+            }
+        }
+
+        /* Profile page specific styles */
+        .profile-card {
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .profile-avatar-container {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            overflow: hidden;
+            margin: 0 auto 20px auto;
+            border: 3px solid #0084ff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #f0f2f5;
+            position: relative;
+        }
+
+        .profile-avatar-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .profile-avatar-container .upload-icon {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            background-color: #0084ff;
+            color: white;
+            border-radius: 50%;
+            padding: 8px;
+            cursor: pointer;
+            font-size: 1.2rem;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            transition: background-color 0.2s ease;
+        }
+
+        .profile-avatar-container .upload-icon:hover {
+            background-color: #006acc;
+        }
     </style>
 </head>
 <body>
@@ -641,7 +746,8 @@
         </nav>
 
         <div class="main-layout-area">
-            <aside class="sidebar d-none d-md-block"> <div class="sidebar-header">
+            <aside class="sidebar d-none d-md-block">
+                <div class="sidebar-header">
                     <h4>Menu</h4>
                 </div>
                 <ul class="sidebar-nav">
@@ -814,7 +920,7 @@
                     lastMessage: "Tu as vu les derniers défis TikTok sur la danse congolaise ?",
                     messages: [
                         { type: "me", contentType: "text", content: "Patrick, t'es là ? Je viens de voir une vidéo de dingue sur TikTok, le nouveau challenge de danse congolaise !", time: "14:00 PM" },
-                        { type: "other", contentType: "text", content: "Ah oui ? Envoyez-moi le lien, je dois voir ça ! Mon réseau est un peu lent aujourd'hui, haha.", time: "14:15 PM" },
+                        { type: "other", contentType: "text", content: "Ah oui ? Envoyez-me le lien, je dois voir ça ! Mon réseau est un peu lent aujourd'hui, haha.", time: "14:15 PM" },
                         { type: "me", contentType: "text", content: "Je t'envoie ça. Faut absolument que tu essaies les pas, c'est contagieux !", time: "14:20 PM" },
                         { type: "other", contentType: "text", content: "Mdr, je suis plus musique que danse, mais je vais regarder ! La prochaine fois on fait un live ensemble.", time: "14:30 PM" }
                     ]
@@ -926,22 +1032,44 @@
             };
 
             let currentChatContactId = null; // Pour suivre le contact/groupe actuellement ouvert dans le chat
-            let currentChatType = null; // 'individual' or 'group'
+            let currentChatType = null; // 'individual' ou 'group'
             let groupsData = JSON.parse(localStorage.getItem('groupsData')) || {}; // Données des groupes
 
-            // Add some initial fake group messages if groups exist
+            // Ajoute des messages de groupe initiaux si les groupes existent et n'ont pas de messages
             if (Object.keys(groupsData).length > 0) {
                 for (const groupId in groupsData) {
-                    if (groupsData.hasOwnProperty(groupId) && !groupsData[groupId].messages) {
-                        groupsData[groupId].messages = [
-                            { type: "other", senderId: groupsData[groupId].members[0] || "johnDoe", content: "Bonjour à tous ! J'espère que vous allez bien.", time: "10:00 AM" },
-                            { type: "me", senderId: "johnDoe", content: "Salut l'équipe ! Ça va super bien, merci.", time: "10:05 AM" },
-                            { type: "other", senderId: groupsData[groupId].members[1] || "aliceSmith", content: "Oui, tout va bien de mon côté aussi. Des nouveautés ?", time: "10:10 AM" },
-                            { type: "me", senderId: "johnDoe", content: "Pas grand chose, juste du code !", time: "10:15 AM" }
-                        ];
+                    if (groupsData.hasOwnProperty(groupId) && (!groupsData[groupId].messages || groupsData[groupId].messages.length === 0)) {
+                        const group = groupsData[groupId];
+                        group.messages = []; // S'assure que c'est un tableau
+
+                        // Ajoute des messages d'exemple seulement si le groupe a des membres
+                        if (group.members.length > 0) {
+                            // Collecte les IDs des membres valides pour les messages "other"
+                            const validMemberIds = group.members.filter(memberId => contactsData[memberId]);
+
+                            // Message du premier membre valide (si existe)
+                            if (validMemberIds.length > 0) {
+                                group.messages.push({ type: "other", senderId: validMemberIds[0], content: "Bonjour à tous ! J'espère que vous allez bien.", time: "10:00 AM" });
+                            }
+                            // Message de l'utilisateur actuel ("moi")
+                            group.messages.push({ type: "me", senderId: "johnDoe", content: "Salut l'équipe ! Ça va super bien, merci.", time: "10:05 AM" });
+
+                            // Message d'un deuxième membre valide différent du premier (si existe)
+                            if (validMemberIds.length > 1 && validMemberIds[1] !== validMemberIds[0]) {
+                                group.messages.push({ type: "other", senderId: validMemberIds[1], content: "Oui, tout va bien de mon côté aussi. Des nouveautés ?", time: "10:10 AM" });
+                            } else if (validMemberIds.length > 0 && validMemberIds[0] !== "johnDoe") {
+                                // Fallback: if only one member (not current user), let them send another message
+                                group.messages.push({ type: "other", senderId: validMemberIds[0], content: "Oui, tout va bien de mon côté aussi. Des nouveautés ?", time: "10:10 AM" });
+                            }
+                            // Autre message de l'utilisateur actuel ("moi")
+                            group.messages.push({ type: "me", senderId: "johnDoe", content: "Pas grand chose, juste du code !", time: "10:15 AM" });
+                        } else {
+                            // Si aucun membre, ajoute un message par défaut de "moi"
+                            group.messages.push({ type: "me", senderId: "johnDoe", content: "Bienvenue dans ce groupe ! Invitez des membres pour commencer à discuter.", time: "09:00 AM" });
+                        }
                     }
                 }
-                saveGroups(); // Save updated groups with messages
+                saveGroups(); // Sauvegarde les groupes mis à jour avec les messages
             }
 
 
@@ -986,6 +1114,19 @@
                 const total = cart.reduce((total, item) => total + (item.price * item.quantity), 0);
                 console.log('Total du panier calculé:', total);
                 return total;
+            }
+
+            /**
+             * Tronque un texte à une longueur maximale et ajoute des points de suspension.
+             * @param {string} text - Le texte à tronquer.
+             * @param {number} maxLength - La longueur maximale du texte.
+             * @returns {string} Le texte tronqué.
+             */
+            function truncateText(text, maxLength) {
+                if (text.length > maxLength) {
+                    return text.substring(0, maxLength - 3) + '...';
+                }
+                return text;
             }
 
             // --- Fonctions de rendu de l'interface utilisateur ---
@@ -1589,12 +1730,27 @@
                 console.log(`Produits filtrés pour la recherche "${query}":`, filtered.length, 'articles.');
             }
 
+            // Function to toggle between contact list and chat window on mobile
+            function toggleChatView(showChatWindow = false) {
+                const contactsLayout = document.querySelector('.contacts-layout');
+                if (!contactsLayout) return; // Exit if layout not rendered yet
+
+                if (window.innerWidth <= 768) { // Only apply on mobile
+                    if (showChatWindow) {
+                        contactsLayout.classList.add('chat-active');
+                    } else {
+                        contactsLayout.classList.remove('chat-active');
+                    }
+                }
+            }
+
             // --- Fonctions de la section Contacts/Chat ---
 
             /**
              * Affiche la liste des contacts.
              */
             function renderContacts() {
+                toggleChatView(false); // Ensure list is visible on mobile when rendering contacts
                 appContent.innerHTML = `
                     <h2 class="mb-4 text-center"><i class="fas fa-address-book"></i> Vos Contacts</h2>
                     <div class="contacts-layout">
@@ -1618,7 +1774,7 @@
                             <img src="${contact.thumbnail}" alt="${contact.name}" onerror="this.onerror=null;this.src='https://placehold.co/40x40/cccccc/ffffff?text=${contact.name.charAt(0)}'">
                             <div class="contact-info">
                                 <h6>${contact.name}</h6>
-                                <p>${contact.lastMessage}</p>
+                                <p>${truncateText(contact.lastMessage, 50)}</p>
                             </div>
                         </div>
                     `;
@@ -1656,6 +1812,7 @@
 
                 chatWindowElement.innerHTML = `
                     <div class="chat-header">
+                        <button class="back-button" id="backToContactsListBtn"><i class="fas fa-arrow-left"></i></button>
                         <img src="${contact.avatar}" alt="${contact.name}" onerror="this.onerror=null;this.src='https://placehold.co/50x50/0084ff/ffffff?text=${contact.name.charAt(0)}'">
                         <h5>${contact.name}
                             <span class="status-dot ${contact.status === 'offline' ? 'offline' : ''}"></span>
@@ -1672,6 +1829,11 @@
                 const chatMessagesElement = document.getElementById('chatMessages');
                 const messageInput = document.getElementById('messageInput');
                 const sendMessageBtn = document.getElementById('sendMessageBtn');
+                const backToContactsListBtn = document.getElementById('backToContactsListBtn');
+
+                backToContactsListBtn.addEventListener('click', () => {
+                    renderContacts(); // Go back to the contacts list
+                });
 
                 // Afficher les messages existants
                 contact.messages.forEach(msg => {
@@ -1689,6 +1851,8 @@
                         sendMessage(messageInput.value, contactId, chatMessagesElement, messageInput);
                     }
                 });
+
+                toggleChatView(true); // Activate chat view on mobile
                 console.log('Fenêtre de chat affichée pour le contact:', contact.name);
             }
 
@@ -1814,6 +1978,7 @@
              * Affiche la section de gestion des groupes (création, ajout/suppression de membres).
              */
             function renderGroupManagement() {
+                toggleChatView(false); // Ensure list is visible on mobile when rendering group management
                 appContent.innerHTML = `
                     <h2 class="mb-4 text-center"><i class="fas fa-users-cog"></i> Gestion des Groupes</h2>
                     <div class="card p-4 shadow-sm mb-4">
@@ -2009,6 +2174,7 @@
              * Affiche la liste des conversations de groupe.
              */
             function renderGroupChatList() {
+                toggleChatView(false); // Ensure list is visible on mobile when rendering group chats
                 appContent.innerHTML = `
                     <h2 class="mb-4 text-center"><i class="fas fa-comments"></i> Conversations de Groupes</h2>
                     <div class="contacts-layout">
@@ -2034,10 +2200,10 @@
                     const group = groupsData[groupId];
                     const groupItemHtml = `
                         <div class="contact-item" data-group-id="${groupId}">
-                            <img src="https://placehold.co/40x40/0084ff/ffffff?text=G" alt="Groupe" style="border-radius: 50%; object-fit: cover; margin-right: 10px;">
+                            <img src="https://placehold.co/40x40/0084ff/ffffff?text=${group.name.charAt(0).toUpperCase()}" alt="Groupe ${group.name}" style="border-radius: 50%; object-fit: cover; margin-right: 10px;">
                             <div class="contact-info">
                                 <h6>${group.name}</h6>
-                                <p>${group.messages && group.messages.length > 0 ? group.messages[group.messages.length - 1].content : 'Aucun message'}</p>
+                                <p>${truncateText(group.messages && group.messages.length > 0 ? group.messages[group.messages.length - 1].content : 'Aucun message', 50)}</p>
                             </div>
                         </div>
                     `;
@@ -2076,7 +2242,8 @@
 
                 chatWindowElement.innerHTML = `
                     <div class="chat-header">
-                        <i class="fas fa-users fa-2x me-3"></i>
+                        <button class="back-button" id="backToGroupListBtn"><i class="fas fa-arrow-left"></i></button>
+                        <img src="https://placehold.co/50x50/0084ff/ffffff?text=${group.name.charAt(0).toUpperCase()}" alt="Groupe ${group.name}" style="border-radius: 50%; object-fit: cover; margin-right: 15px;">
                         <h5>${group.name}
                             <small class="ms-2">(${group.members.length} membres)</small>
                         </h5>
@@ -2092,6 +2259,11 @@
                 const chatMessagesElement = document.getElementById('chatMessages');
                 const messageInput = document.getElementById('messageInput');
                 const sendMessageBtn = document.getElementById('sendMessageBtn');
+                const backToGroupListBtn = document.getElementById('backToGroupListBtn');
+
+                backToGroupListBtn.addEventListener('click', () => {
+                    renderGroupChatList(); // Go back to the group list
+                });
 
                 // Afficher les messages existants du groupe
                 group.messages.forEach(msg => {
@@ -2111,6 +2283,7 @@
                         sendGroupMessage(messageInput.value, groupId, chatMessagesElement, messageInput);
                     }
                 });
+                toggleChatView(true); // Activate chat view on mobile
                 console.log('Fenêtre de chat affichée pour le groupe:', group.name);
             }
 
@@ -2149,6 +2322,106 @@
                 messageInput.value = ''; // Clear input
                 scrollToBottom(chatMessagesElement);
                 saveGroups(); // Save updated group data
+            }
+
+            // --- Profile Management Functions ---
+
+            /**
+             * Renders the user profile editing page.
+             */
+            function renderProfilePage() {
+                appContent.innerHTML = `
+                    <h2 class="mb-4 text-center"><i class="fas fa-user-circle"></i> Mon Profil</h2>
+                    <div class="card profile-card">
+                        <form id="profileForm">
+                            <div class="text-center mb-4">
+                                <div class="profile-avatar-container">
+                                    <img id="profileAvatar" src="https://placehold.co/120x120/cccccc/ffffff?text=Avatar" alt="Profile Avatar">
+                                    <label for="avatarUpload" class="upload-icon">
+                                        <i class="fas fa-camera"></i>
+                                    </label>
+                                    <input type="file" id="avatarUpload" accept="image/*" class="d-none">
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="profileName" class="form-label">Nom complet</label>
+                                <input type="text" class="form-control" id="profileName" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="profileEmail" class="form-label">Email</label>
+                                <input type="email" class="form-control" id="profileEmail" required>
+                            </div>
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-primary btn-lg"><i class="fas fa-save"></i> Enregistrer les modifications</button>
+                            </div>
+                        </form>
+                    </div>
+                `;
+                loadProfileData(); // Load existing profile data
+                attachProfileListeners(); // Attach event listeners for the profile page
+                console.log('Page de profil affichée.');
+            }
+
+            /**
+             * Loads user profile data from localStorage and populates the form.
+             */
+            function loadProfileData() {
+                const profileData = JSON.parse(localStorage.getItem('userProfile')) || {
+                    name: 'Utilisateur JJ-Commerce',
+                    email: 'utilisateur@jjcommerce.com',
+                    avatar: 'https://placehold.co/120x120/cccccc/ffffff?text=Avatar'
+                };
+
+                document.getElementById('profileName').value = profileData.name;
+                document.getElementById('profileEmail').value = profileData.email;
+                document.getElementById('profileAvatar').src = profileData.avatar;
+                console.log('Données de profil chargées:', profileData);
+            }
+
+            /**
+             * Attaches event listeners for the profile page elements.
+             */
+            function attachProfileListeners() {
+                document.getElementById('profileForm').addEventListener('submit', saveProfileData);
+                document.getElementById('avatarUpload').addEventListener('change', handleAvatarUpload);
+                console.log('Écouteurs de profil attachés.');
+            }
+
+            /**
+             * Handles the submission of the profile form, saving data to localStorage.
+             * @param {Event} event - The submit event.
+             */
+            function saveProfileData(event) {
+                event.preventDefault();
+                const name = document.getElementById('profileName').value;
+                const email = document.getElementById('profileEmail').value;
+                const avatar = document.getElementById('profileAvatar').src; // Get current avatar src
+
+                const updatedProfile = { name, email, avatar };
+                localStorage.setItem('userProfile', JSON.stringify(updatedProfile));
+                showToast('Profil enregistré avec succès !', 'success');
+                console.log('Profil enregistré:', updatedProfile);
+            }
+
+            /**
+             * Handles the simulated avatar upload.
+             * In a real app, this would involve sending the file to a server.
+             * Here, it just updates the image source with a placeholder.
+             * @param {Event} event - The change event from the file input.
+             */
+            function handleAvatarUpload(event) {
+                const file = event.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        // In a real app, you'd upload this e.target.result (base64) to a server
+                        // and get a permanent URL. For this demo, we'll just use it directly.
+                        document.getElementById('profileAvatar').src = e.target.result;
+                        showToast('Image de profil mise à jour !', 'info');
+                        console.log('Nouvel avatar sélectionné.');
+                    };
+                    reader.readAsDataURL(file); // Reads the file as a Base64 string
+                }
             }
 
 
@@ -2241,7 +2514,7 @@
                 sidebarProfileLink.addEventListener('click', (e) => {
                     e.preventDefault();
                     console.log('Sidebar: Mon Profil cliqué.');
-                    appContent.innerHTML = `<h2 class="text-center mt-5">Section Mon Profil (à implémenter)</h2><p class="text-center">Informations de votre profil utilisateur.</p>`;
+                    renderProfilePage(); // Affiche la page de gestion de profil
                 });
             }
 
