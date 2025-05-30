@@ -44,14 +44,23 @@
             width: 100%; /* S'assure qu'il prend toute la largeur du parent */
         }
 
+        /* Styles pour la barre latérale (desktop) */
         .sidebar {
-            width: 220px; /* Largeur fixe pour la barre latérale */
+            display: none; /* Hidden by default on mobile */
+            width: 220px; /* Fixed width for the sidebar */
             background-color: #f8f9fa; /* Fond clair pour la barre latérale */
             padding: 20px 15px;
             border-right: 1px solid #eee;
             box-shadow: 2px 0 5px rgba(0, 0, 0, 0.05);
             flex-shrink: 0; /* Empêche la barre latérale de rétrécir */
             overflow-y: auto; /* Permet le défilement si le contenu est long */
+        }
+
+        /* Show sidebar on medium and larger screens */
+        @media (min-width: 768px) {
+            .sidebar {
+                display: block;
+            }
         }
 
         .sidebar-header {
@@ -382,9 +391,6 @@
 
         /* Responsive adjustments for sidebar */
         @media (max-width: 768px) {
-            .sidebar {
-                display: none; /* Cache la barre latérale sur les petits écrans */
-            }
             .main-layout-area {
                 flex-direction: column; /* Empile le contenu principal verticalement sur les petits écrans */
             }
@@ -858,13 +864,30 @@
                         <li class="nav-item d-md-none">
                             <a class="nav-link" href="#" id="mobileProfileLink"><i class="fas fa-user-circle"></i> Mon Profil</a>
                         </li>
+                        <li class="nav-item d-md-none separator"></li>
+                        <li class="nav-item d-md-none">
+                            <a class="nav-link" href="#" id="mobileSidebarCategoriesLink"><i class="fas fa-th-list"></i> Catégories</a>
+                        </li>
+                        <li class="nav-item d-md-none">
+                            <a class="nav-link" href="#" id="mobileSidebarFavoritesLink"><i class="fas fa-star"></i> Favoris</a>
+                        </li>
+                        <li class="nav-item d-md-none separator"></li>
+                        <li class="nav-item d-md-none">
+                            <a class="nav-link" href="#" id="mobileSidebarGroupChatsLink"><i class="fas fa-comments"></i> Groupes (Conversations)</a>
+                        </li>
+                        <li class="nav-item d-md-none">
+                            <a class="nav-link" href="#" id="mobileSidebarGroupManagementLink"><i class="fas fa-users-cog"></i> Gestion des groupes</a>
+                        </li>
+                        <li class="nav-item d-md-none">
+                            <a class="nav-link" href="#" id="mobileSidebarContactsLink"><i class="fas fa-address-book"></i> Contacts</a>
+                        </li>
                     </ul>
                 </div>
             </div>
         </nav>
 
         <div class="main-layout-area">
-            <aside class="sidebar d-none d-md-block">
+            <aside class="sidebar">
                 <div class="sidebar-header">
                     <h4>Menu</h4>
                 </div>
@@ -951,14 +974,23 @@
             const orderHistoryLink = document.getElementById('orderHistoryLink');
             const searchInput = document.getElementById('searchInput'); // Barre de recherche desktop
             const searchInputMobile = document.getElementById('searchInputMobile'); // Barre de recherche mobile
+            const navbarCollapseElement = document.getElementById('navbarNav'); // Get the navbar collapse element
 
-            // Sidebar links
+            // Sidebar links (desktop)
             const sidebarCategoriesLink = document.getElementById('sidebarCategoriesLink');
             const sidebarFavoritesLink = document.getElementById('sidebarFavoritesLink');
-            const sidebarGroupChatsLink = document.getElementById('sidebarGroupChatsLink'); // New ID for group chats
-            const sidebarGroupManagementLink = document.getElementById('sidebarGroupManagementLink'); // New ID for group management
+            const sidebarGroupChatsLink = document.getElementById('sidebarGroupChatsLink');
+            const sidebarGroupManagementLink = document.getElementById('sidebarGroupManagementLink');
             const sidebarContactsLink = document.getElementById('sidebarContactsLink');
             const sidebarProfileLink = document.getElementById('sidebarProfileLink');
+
+            // Sidebar links (mobile - new IDs)
+            const mobileSidebarCategoriesLink = document.getElementById('mobileSidebarCategoriesLink');
+            const mobileSidebarFavoritesLink = document.getElementById('mobileSidebarFavoritesLink');
+            const mobileSidebarGroupChatsLink = document.getElementById('mobileSidebarGroupChatsLink');
+            const mobileSidebarGroupManagementLink = document.getElementById('mobileSidebarGroupManagementLink');
+            const mobileSidebarContactsLink = document.getElementById('mobileSidebarContactsLink');
+
 
             // Initialisation du panier depuis le localStorage ou un tableau vide
             let cart = JSON.parse(localStorage.getItem('cart')) || [];
@@ -2548,23 +2580,6 @@
             }
 
             /**
-             * Handles the submission of the profile form, saving data to localStorage.
-             * @param {Event} event - The submit event.
-             */
-            function saveProfileData(event) {
-                event.preventDefault();
-                const name = document.getElementById('profileName').value;
-                const email = document.getElementById('profileEmail').value;
-                const avatar = document.getElementById('profileAvatar').src; // Get current avatar src
-
-                const updatedProfile = { name, email, avatar };
-                localStorage.setItem('userProfile', JSON.stringify(updatedProfile));
-                showToast('Profil enregistré avec succès !', 'success');
-                console.log('Profil enregistré:', updatedProfile);
-                updateHeaderProfile(); // Update header after saving profile
-            }
-
-            /**
              * Handles the simulated avatar upload.
              * In a real app, this would involve sending the file to a server.
              * Here, it just updates the image source with a placeholder.
@@ -2739,6 +2754,14 @@
                 renderCheckoutForm(); // Affiche le formulaire de commande
             });
 
+            // Fonction utilitaire pour fermer le menu de navigation mobile
+            function closeMobileNavbar() {
+                const bsCollapse = bootstrap.Collapse.getInstance(navbarCollapseElement);
+                if (bsCollapse) {
+                    bsCollapse.hide();
+                }
+            }
+
             // Navigue vers la page d'accueil (produits)
             // Lorsque le logo JJ-Commerce est cliqué, il agit comme le lien "Accueil"
             document.querySelector('.navbar-brand').addEventListener('click', (e) => {
@@ -2750,6 +2773,7 @@
                 // Gère la classe 'active' pour la navigation
                 document.querySelectorAll('.navbar-nav .nav-link').forEach(link => link.classList.remove('active'));
                 homeLink.classList.add('active');
+                closeMobileNavbar(); // Close mobile menu
             });
 
             homeLink.addEventListener('click', (e) => {
@@ -2761,6 +2785,7 @@
                 // Gère la classe 'active' pour la navigation
                 document.querySelectorAll('.navbar-nav .nav-link').forEach(link => link.classList.remove('active'));
                 homeLink.classList.add('active');
+                closeMobileNavbar(); // Close mobile menu
             });
 
             // Navigue vers la page de l'historique des commandes
@@ -2771,14 +2796,16 @@
                 // Gère la classe 'active' pour la navigation
                 document.querySelectorAll('.navbar-nav .nav-link').forEach(link => link.classList.remove('active'));
                 orderHistoryLink.classList.add('active');
+                closeMobileNavbar(); // Close mobile menu
             });
 
-            // Sidebar link event listeners
+            // Sidebar link event listeners (Desktop)
             if (sidebarCategoriesLink) {
                 sidebarCategoriesLink.addEventListener('click', (e) => {
                     e.preventDefault();
                     console.log('Sidebar: Catégories cliqué.');
                     renderProducts(); // Pour l'instant, affiche tous les produits
+                    hideContactDetailsSidebar(); // Ensure sidebar is hidden
                 });
             }
             if (sidebarFavoritesLink) {
@@ -2818,6 +2845,49 @@
                 });
             }
 
+            // Sidebar link event listeners (Mobile)
+            if (mobileSidebarCategoriesLink) {
+                mobileSidebarCategoriesLink.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    console.log('Mobile Sidebar: Catégories cliqué.');
+                    renderProducts();
+                    closeMobileNavbar();
+                });
+            }
+            if (mobileSidebarFavoritesLink) {
+                mobileSidebarFavoritesLink.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    console.log('Mobile Sidebar: Favoris cliqué.');
+                    appContent.innerHTML = `<h2 class="text-center mt-5">Section Favoris (à implémenter)</h2><p class="text-center">Vos produits favoris seront affichés ici.</p>`;
+                    closeMobileNavbar();
+                });
+            }
+            if (mobileSidebarGroupChatsLink) {
+                mobileSidebarGroupChatsLink.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    console.log('Mobile Sidebar: Groupes (Conversations) cliqué.');
+                    renderGroupChatList();
+                    closeMobileNavbar();
+                });
+            }
+            if (mobileSidebarGroupManagementLink) {
+                mobileSidebarGroupManagementLink.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    console.log('Mobile Sidebar: Gestion des groupes cliqué.');
+                    renderGroupManagement();
+                    closeMobileNavbar();
+                });
+            }
+            if (mobileSidebarContactsLink) {
+                mobileSidebarContactsLink.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    console.log('Mobile Sidebar: Contacts cliqué.');
+                    renderContacts();
+                    closeMobileNavbar();
+                });
+            }
+
+
             // Make the header profile display clickable
             const headerProfileLink = document.getElementById('headerProfileLink');
             if (headerProfileLink) {
@@ -2833,12 +2903,7 @@
                 mobileProfileLink.addEventListener('click', (e) => {
                     e.preventDefault();
                     renderProfilePage();
-                    // Close navbar on mobile after clicking link
-                    const navbarCollapse = document.getElementById('navbarNav');
-                    const bsCollapse = bootstrap.Collapse.getInstance(navbarCollapse);
-                    if (bsCollapse) {
-                        bsCollapse.hide();
-                    }
+                    closeMobileNavbar(); // Close navbar on mobile after clicking link
                 });
             }
 
